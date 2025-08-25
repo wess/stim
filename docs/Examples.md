@@ -1,6 +1,6 @@
-# Spark Examples
+# Stim Examples
 
-Real-world examples demonstrating Spark's capabilities for building sophisticated Claude Code commands.
+Real-world examples demonstrating Stim's capabilities for building sophisticated Claude Code commands.
 
 ## Table of Contents
 
@@ -14,9 +14,9 @@ Real-world examples demonstrating Spark's capabilities for building sophisticate
 
 ### Hello World
 
-The simplest possible Spark command:
+The simplest possible Stim command:
 
-```spark
+```stim
 command hello {
   ask("Hello! What's your name?")
   wait_for_response()
@@ -28,7 +28,7 @@ command hello {
 
 Collect information with a simple survey:
 
-```spark
+```stim
 command survey {
   questions = [
     "What's your primary programming language?",
@@ -49,7 +49,7 @@ command survey {
 
 Check if features are needed:
 
-```spark
+```stim
 command feature_check {
   features = ["Authentication", "Database", "API", "Frontend", "Testing"]
   needed_features = []
@@ -68,7 +68,7 @@ command feature_check {
 
 A comprehensive project setup workflow:
 
-```spark
+```stim
 command init_project {
   // Gather project information
   ask("What's your project name?")
@@ -119,7 +119,7 @@ command init_project {
 
 From the examples directory - comprehensive code review:
 
-```spark
+```stim
 command code_review {
   // Setup
   review_areas = [
@@ -167,7 +167,7 @@ command code_review {
 
 Semantic commit workflow:
 
-```spark
+```stim
 command commit {
   // Review changes
   ask("Review git status and diff. What changes were made?")
@@ -209,7 +209,7 @@ command commit {
 
 Pre-deployment verification:
 
-```spark
+```stim
 command deploy_check {
   checks = [
     "All tests passing",
@@ -249,7 +249,7 @@ command deploy_check {
 
 Interactive API doc creation:
 
-```spark
+```stim
 command api_docs {
   ask("What's the base URL of your API?")
   wait_for_response()
@@ -293,7 +293,7 @@ command api_docs {
 
 Structured bug reporting:
 
-```spark
+```stim
 command bug_report {
   ask("What's the bug title/summary?")
   wait_for_response()
@@ -344,7 +344,7 @@ command bug_report {
 
 Generate React component boilerplate:
 
-```spark
+```stim
 command react_component {
   ask("Component name?")
   wait_for_response()
@@ -390,7 +390,7 @@ command react_component {
 
 Interactive schema design:
 
-```spark
+```stim
 command db_schema {
   ask("What's the table/collection name?")
   wait_for_response()
@@ -449,7 +449,7 @@ command db_schema {
 
 Multi-step configuration setup:
 
-```spark
+```stim
 command config_wizard {
   config = {}
   
@@ -489,7 +489,7 @@ command config_wizard {
 
 Comprehensive testing setup:
 
-```spark
+```stim
 command test_strategy {
   test_types = [
     "Unit tests",
@@ -534,7 +534,7 @@ command test_strategy {
 
 Start with basic functionality, then add optional features:
 
-```spark
+```stim
 command enhanced_example {
   // Core functionality
   ask("Basic required information")
@@ -554,7 +554,7 @@ command enhanced_example {
 
 Keep users informed about what's happening:
 
-```spark
+```stim
 ask("Analyzing your requirements...")
 wait_for_response()
 
@@ -566,4 +566,4 @@ ask("✓ Project created! Next steps: run npm install")
 
 ---
 
-**Want to contribute examples?** Submit a PR with your `.spark` command to help other developers!
+**Want to contribute examples?** Submit a PR with your `.stim` command to help other developers!

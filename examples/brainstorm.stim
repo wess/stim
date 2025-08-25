@@ -1,9 +1,5 @@
 command brainstorm {
-  context_questions = [
-    "What problem are you solving?", 
-    "Who are the target users?", 
-    "What are your constraints?"
-  ]
+  context_questions = ["What problem are you solving?", "Who are the target users?", "What are your constraints?"]
   
   for question in context_questions {
     ask(question)

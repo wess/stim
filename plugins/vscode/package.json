@@ -1,9 +1,9 @@
 {
-  "name": "spark-lang",
-  "displayName": "Spark Language Support",
-  "description": "Syntax highlighting and language support for Spark DSL (.spark files)",
+  "name": "stim-lang",
+  "displayName": "Stim Language Support",
+  "description": "Syntax highlighting and language support for Stim DSL (.stim files)",
   "version": "1.0.0",
-  "publisher": "spark-lang",
+  "publisher": "stim-lang",
   "engines": {
     "vscode": "^1.80.0"
   },
@@ -13,7 +13,7 @@
     "Other"
   ],
   "keywords": [
-    "spark",
+    "stim",
     "dsl",
     "claude",
     "automation",
@@ -23,69 +23,69 @@
   "contributes": {
     "languages": [
       {
-        "id": "spark",
-        "aliases": ["Spark", "spark"],
-        "extensions": [".spark"],
+        "id": "stim",
+        "aliases": ["Stim", "stim"],
+        "extensions": [".stim"],
         "configuration": "./language-configuration.json"
       }
     ],
     "grammars": [
       {
-        "language": "spark",
-        "scopeName": "source.spark",
-        "path": "./syntaxes/spark.tmLanguage.json"
+        "language": "stim",
+        "scopeName": "source.stim",
+        "path": "./syntaxes/stim.tmLanguage.json"
       }
     ],
     "commands": [
       {
-        "command": "spark.compile",
-        "title": "Compile Spark File",
-        "category": "Spark"
+        "command": "stim.compile",
+        "title": "Compile Stim File",
+        "category": "Stim"
       },
       {
-        "command": "spark.compileAndRun",
+        "command": "stim.compileAndRun",
         "title": "Compile and Test in Claude Code",
-        "category": "Spark"
+        "category": "Stim"
       },
       {
-        "command": "spark.newCommand",
-        "title": "New Spark Command",
-        "category": "Spark"
+        "command": "stim.newCommand",
+        "title": "New Stim Command",
+        "category": "Stim"
       }
     ],
     "keybindings": [
       {
-        "command": "spark.compile",
+        "command": "stim.compile",
         "key": "ctrl+shift+b",
         "mac": "cmd+shift+b",
-        "when": "resourceExtname == .spark"
+        "when": "resourceExtname == .stim"
       }
     ],
     "menus": {
       "editor/context": [
         {
-          "when": "resourceExtname == .spark",
-          "command": "spark.compile",
-          "group": "spark"
+          "when": "resourceExtname == .stim",
+          "command": "stim.compile",
+          "group": "stim"
         },
         {
-          "when": "resourceExtname == .spark",
-          "command": "spark.compileAndRun",
-          "group": "spark"
+          "when": "resourceExtname == .stim",
+          "command": "stim.compileAndRun",
+          "group": "stim"
         }
       ],
       "explorer/context": [
         {
-          "when": "resourceExtname == .spark",
-          "command": "spark.compile",
-          "group": "spark"
+          "when": "resourceExtname == .stim",
+          "command": "stim.compile",
+          "group": "stim"
         }
       ]
     },
     "snippets": [
       {
-        "language": "spark",
-        "path": "./snippets/spark.json"
+        "language": "stim",
+        "path": "./snippets/stim.json"
       }
     ]
   },
@@ -97,7 +97,7 @@
     "publish": "vsce publish"
   },
   "activationEvents": [
-    "onLanguage:spark"
+    "onLanguage:stim"
   ],
   "devDependencies": {
     "@types/node": "^20.0.0",
@@ -107,7 +107,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/user/spark.git"
+    "url": "https://github.com/user/stim.git"
   },
   "license": "MIT"
 }

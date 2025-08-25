@@ -7,7 +7,7 @@
       "\t$0",
       "}"
     ],
-    "description": "Create a new Spark command"
+    "description": "Create a new Stim command"
   },
   "Ask Question": {
     "prefix": "ask",

@@ -1,6 +1,6 @@
-# Spark FAQ
+# Stim FAQ
 
-Frequently asked questions and troubleshooting guide for Spark.
+Frequently asked questions and troubleshooting guide for Stim.
 
 ## Table of Contents
 
@@ -14,11 +14,11 @@ Frequently asked questions and troubleshooting guide for Spark.
 
 ## General Questions
 
-### What is Spark?
+### What is Stim?
 
-Spark is a Domain-Specific Language (DSL) for creating sophisticated Claude Code commands. Instead of writing complex markdown instructions, you write `.spark` files with variables, loops, and conditionals that compile to Claude-executable `.md` commands.
+Stim is a Domain-Specific Language (DSL) for creating sophisticated Claude Code commands. Instead of writing complex markdown instructions, you write `.stim` files with variables, loops, and conditionals that compile to Claude-executable `.md` commands.
 
-### Why use Spark instead of writing markdown directly?
+### Why use Stim instead of writing markdown directly?
 
 **Traditional markdown approach:**
 ```markdown
@@ -28,8 +28,8 @@ If the user says they want option A, do this...
 If the user says they want option B, do that...
 ```
 
-**Spark approach:**
-```spark
+**Stim approach:**
+```stim
 command interactive {
   for question in questions {
     ask(question)
@@ -48,13 +48,13 @@ Benefits:
 - **Version-controllable**: Clean, readable source code
 - **Debuggable**: Clear logic flow and error checking
 
-### Is Spark only for Claude Code?
+### Is Stim only for Claude Code?
 
 Currently yes, but the architecture is extensible. Future versions could target other LLM platforms.
 
-### Do I need to know programming to use Spark?
+### Do I need to know programming to use Stim?
 
-Basic programming concepts help, but Spark is designed to be approachable:
+Basic programming concepts help, but Stim is designed to be approachable:
 - Variables store data: `name = "John"`
 - Loops repeat actions: `for item in items { ask(item) }`
 - Conditions make decisions: `if (confirm("Ready?")) { ... }`
@@ -69,18 +69,18 @@ The [Tutorial](Tutorial.md) walks through everything step-by-step.
 - [Claude Code](https://claude.ai/code) - For executing compiled commands
 - Basic command-line familiarity
 
-### How do I install Spark?
+### How do I install Stim?
 
 ```bash
 # Clone the repository
 git clone <repository-url>
-cd spark
+cd stim
 
 # Install dependencies  
 bun install
 
 # Verify installation
-bun run dev --help
+bun run build && bun run dev --help
 ```
 
 ### Where do compiled commands go?
@@ -88,7 +88,7 @@ bun run dev --help
 Compiled `.md` files are created in `~/.claude/commands/`:
 
 ```bash
-bun run dev compile hello.spark
+bun run build && ./dist/stim compile hello.stim
 # Creates ~/.claude/commands/hello.md
 # Use with: /hello
 ```
@@ -101,7 +101,7 @@ Not currently, but this is planned for a future version. Commands must be in `~/
 
 ### What's the basic syntax?
 
-```spark
+```stim
 command name {
   // Variables
   text = "Hello"
@@ -126,7 +126,7 @@ command name {
 
 Use escape sequences or alternate quote styles:
 
-```spark
+```stim
 // Escape quotes
 message = "She said \"Hello\" to me"
 message = 'He\'s here'
@@ -140,7 +140,7 @@ message = 'She said "Hello" to me'
 
 Not directly. Use string concatenation:
 
-```spark
+```stim
 long_message = "This is line one " +
                "and this is line two " + 
                "and this continues here"
@@ -150,7 +150,7 @@ long_message = "This is line one " +
 
 Arrays store multiple string values:
 
-```spark
+```stim
 items = ["first", "second", "third"]
 
 // Use in loops
@@ -166,7 +166,7 @@ text = items.join(", ")  // "first, second, third"
 
 Variables are scoped to the entire command:
 
-```spark
+```stim
 command scope_example {
   name = "initial"
   
@@ -182,7 +182,7 @@ command scope_example {
 
 ### Are there data types?
 
-Spark has three main types:
+Stim has three main types:
 - **String**: `"text"` or `'text'`
 - **Boolean**: `true` or `false`  
 - **Array**: `["item1", "item2"]`
@@ -193,9 +193,9 @@ Numbers are treated as strings: `count = "42"`
 
 ### How does compilation work?
 
-Spark parses your `.spark` file and generates equivalent Claude Code markdown:
+Stim parses your `.stim` file and generates equivalent Claude Code markdown:
 
-```spark
+```stim
 ask("What's your name?")
 ```
 
@@ -208,7 +208,7 @@ Ask the user: "What's your name?"
 
 Variables become instructions in the compiled markdown:
 
-```spark
+```stim
 name = "John"
 ask("Hello " + name)
 ```
@@ -224,7 +224,7 @@ Ask the user: "Hello John"
 Yes! Check the generated `.md` file:
 
 ```bash
-bun run dev compile example.spark
+bun run build && ./dist/stim compile example.stim
 cat ~/.claude/commands/example.md
 ```
 
@@ -237,7 +237,7 @@ Common compilation errors:
 Compilation error: Invalid assignment: name =
 
 # Missing file
-Error: File not found: /path/to/file.spark
+Error: File not found: /path/to/file.stim
 
 # Permission issue  
 Error: Could not write to ~/.claude/commands/
@@ -252,7 +252,7 @@ See [Troubleshooting](#troubleshooting) for solutions.
 After compilation, use the command name with a forward slash:
 
 ```bash
-bun run dev compile hello.spark
+bun run build && ./dist/stim compile hello.stim
 # Creates ~/.claude/commands/hello.md
 
 # In Claude Code:
@@ -274,7 +274,7 @@ Yes, but be careful. If you create a command with the same name as a built-in Cl
 
 Use descriptive names and consider prefixes:
 
-```spark
+```stim
 // Development workflow commands
 command dev_setup { }
 command dev_deploy { }
@@ -295,14 +295,14 @@ command pm_retrospective { }
 1. Verify file exists: `ls ~/.claude/commands/mycommand.md`
 2. Check file contents: `cat ~/.claude/commands/mycommand.md`
 3. Restart Claude Code
-4. Try recompiling: `bun run dev compile mycommand.spark`
+4. Try recompiling: `bun run build && ./dist/stim compile mycommand.stim`
 
 ### Compilation syntax errors
 
 **Problem**: `Invalid assignment: name =`
 
 **Solution**: Check your syntax:
-```spark
+```stim
 // Wrong
 name =
 
@@ -313,7 +313,7 @@ name = "value"
 **Problem**: `Invalid ask statement: ask(unclosed string"`
 
 **Solution**: Close your strings:
-```spark
+```stim
 // Wrong
 ask("Hello world"
 
@@ -326,7 +326,7 @@ ask("Hello world")
 **Problem**: Variables showing up literally instead of their values
 
 **Check your usage**:
-```spark
+```stim
 // This works for string literals
 ask("Hello, world!")
 
@@ -342,7 +342,7 @@ ask("Hello, " + user_name)
 **Problem**: Array not iterating correctly
 
 **Solution**: Check array syntax:
-```spark
+```stim
 // Wrong
 items = "a", "b", "c"
 
@@ -359,7 +359,7 @@ for item in items {
 **Problem**: `create_file` not working
 
 **Check the syntax**:
-```spark
+```stim
 // Wrong
 create_file(filename, content)
 
@@ -384,21 +384,21 @@ create_file("output.md", template_variable)
 
 ## Advanced Usage
 
-### Can I import other Spark files?
+### Can I import other Stim files?
 
 Not in v1.0, but planned for v1.1:
 
-```spark
+```stim
 // Future syntax
-import "common/helpers.spark" as helpers
-import "std/git.spark" as git
+import "common/helpers.stim" as helpers
+import "std/git.stim" as git
 ```
 
 ### How do I create reusable patterns?
 
 Currently, use consistent naming and copy successful patterns:
 
-```spark
+```stim
 // Reusable confirmation pattern
 if (confirm("Are you sure?")) {
   if (confirm("Really sure? This can't be undone.")) {
@@ -411,7 +411,7 @@ options = ["Option A", "Option B", "Option C"]
 ask("Choose an option: " + options.join(", "))
 ```
 
-### Can I debug Spark commands?
+### Can I debug Stim commands?
 
 **During development**:
 1. Compile and check the generated `.md` file
@@ -427,7 +427,7 @@ ask("Choose an option: " + options.join(", "))
 
 Break it into phases:
 
-```spark
+```stim
 command complex_workflow {
   // Phase 1: Gather information
   ask("Project requirements?")
@@ -450,7 +450,7 @@ command complex_workflow {
 
 Currently limited, but you can add validation:
 
-```spark
+```stim
 command validated_input {
   ask("Enter a number between 1-10")
   wait_for_response()
@@ -463,7 +463,7 @@ command validated_input {
 }
 ```
 
-### How do I contribute to Spark?
+### How do I contribute to Stim?
 
 See [Contributing.md](Contributing.md) for:
 - Development setup

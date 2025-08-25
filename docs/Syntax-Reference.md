@@ -1,6 +1,6 @@
-# Spark Syntax Reference
+# Stim Syntax Reference
 
-Complete reference for Spark language syntax and grammar.
+Complete reference for Stim language syntax and grammar.
 
 ## Table of Contents
 
@@ -26,7 +26,7 @@ Identifiers are used for command names, variable names, and function names.
 - Case-sensitive
 
 **Valid identifiers:**
-```spark
+```stim
 command_name
 myVariable
 deploy_to_production
@@ -37,7 +37,7 @@ snake_case_variable
 ```
 
 **Invalid identifiers:**
-```spark
+```stim
 123invalid    // Cannot start with number
 my-variable   // Hyphen not allowed
 my variable   // Space not allowed
@@ -59,7 +59,7 @@ true       false      function   return
 #### String Literals
 Strings are enclosed in double or single quotes:
 
-```spark
+```stim
 "double quoted string"
 'single quoted string'
 "string with \"escaped\" quotes"
@@ -75,7 +75,7 @@ Strings are enclosed in double or single quotes:
 - `\t` - Tab (preserved as literal \t)
 
 #### Boolean Literals
-```spark
+```stim
 true
 false
 ```
@@ -83,7 +83,7 @@ false
 #### Array Literals
 Arrays are enclosed in square brackets with comma-separated elements:
 
-```spark
+```stim
 []                              // empty array
 ["item1"]                       // single element
 ["item1", "item2", "item3"]     // multiple elements
@@ -93,25 +93,25 @@ Arrays are enclosed in square brackets with comma-separated elements:
 ### Operators
 
 #### Arithmetic Operators
-```spark
+```stim
 +     // Addition/concatenation
 ```
 
 #### Comparison Operators
-```spark
+```stim
 ==    // Equality
 !=    // Inequality
 ```
 
 #### Logical Operators
-```spark
+```stim
 !     // Logical NOT
 &&    // Logical AND
 ||    // Logical OR
 ```
 
 ### Punctuation
-```spark
+```stim
 {     // Open brace
 }     // Close brace
 [     // Open bracket
@@ -125,14 +125,14 @@ Arrays are enclosed in square brackets with comma-separated elements:
 ## Command Structure
 
 ### Command Declaration
-```spark
+```stim
 command identifier {
     statement_list
 }
 ```
 
 **Example:**
-```spark
+```stim
 command hello_world {
     ask("Hello, world!")
 }
@@ -141,7 +141,7 @@ command hello_world {
 ### Statement List
 A command body contains zero or more statements:
 
-```spark
+```stim
 command example {
     // Empty command body - valid
 }
@@ -156,12 +156,12 @@ command multiple_statements {
 ## Variables
 
 ### Variable Declaration and Assignment
-```spark
+```stim
 identifier = expression
 ```
 
 **Examples:**
-```spark
+```stim
 name = "John"
 count = "42"
 is_ready = true
@@ -171,7 +171,7 @@ items = ["a", "b", "c"]
 ### Variable Reference
 Variables are referenced by their identifier:
 
-```spark
+```stim
 ask(name)
 ask("Hello " + name)
 if (is_ready) { }
@@ -183,7 +183,7 @@ for item in items { }
 ### String
 Text enclosed in quotes:
 
-```spark
+```stim
 message = "Hello, world!"
 empty = ""
 multiword = "This is a sentence"
@@ -192,7 +192,7 @@ multiword = "This is a sentence"
 ### Boolean
 True or false values:
 
-```spark
+```stim
 flag = true
 disabled = false
 ```
@@ -200,7 +200,7 @@ disabled = false
 ### Array
 Ordered list of elements:
 
-```spark
+```stim
 empty_array = []
 strings = ["one", "two", "three"]
 mixed = ["text", "123", "true"]  // All treated as strings
@@ -213,7 +213,7 @@ mixed = ["text", "123", "true"]  // All treated as strings
 ### String Concatenation (+)
 Joins two strings together:
 
-```spark
+```stim
 full_name = first_name + " " + last_name
 message = "Count: " + count
 greeting = "Hello, " + name + "!"
@@ -224,7 +224,7 @@ greeting = "Hello, " + name + "!"
 #### Equality (==)
 Tests if two values are equal:
 
-```spark
+```stim
 if (status == "complete") {
     ask("Task finished!")
 }
@@ -233,7 +233,7 @@ if (status == "complete") {
 #### Inequality (!=)
 Tests if two values are not equal:
 
-```spark
+```stim
 if (status != "pending") {
     ask("Status changed")
 }
@@ -244,7 +244,7 @@ if (status != "pending") {
 #### Logical NOT (!)
 Negates a boolean value:
 
-```spark
+```stim
 if (!is_complete) {
     ask("Still working...")
 }
@@ -253,7 +253,7 @@ if (!is_complete) {
 #### Logical AND (&&)
 True if both operands are true:
 
-```spark
+```stim
 if (is_ready && has_permission) {
     ask("Proceeding...")
 }
@@ -262,7 +262,7 @@ if (is_ready && has_permission) {
 #### Logical OR (||)
 True if either operand is true:
 
-```spark
+```stim
 if (is_admin || is_owner) {
     ask("Access granted")
 }
@@ -279,7 +279,7 @@ From highest to lowest precedence:
 
 Use parentheses to override precedence:
 
-```spark
+```stim
 result = (a + b) == (c + d)
 condition = !(is_ready && has_data)
 ```
@@ -287,14 +287,14 @@ condition = !(is_ready && has_data)
 ## Control Flow
 
 ### If Statement
-```spark
+```stim
 if (condition) {
     statement_list
 }
 ```
 
 ### If-Else Statement
-```spark
+```stim
 if (condition) {
     statement_list
 } else {
@@ -303,7 +303,7 @@ if (condition) {
 ```
 
 ### For Loop
-```spark
+```stim
 for identifier in expression {
     statement_list
 }
@@ -312,14 +312,14 @@ for identifier in expression {
 The identifier takes on each value from the array expression.
 
 ### While Loop
-```spark
+```stim
 while (condition) {
     statement_list
 }
 ```
 
 ### Break Statement
-```spark
+```stim
 break
 ```
 
@@ -328,36 +328,36 @@ Exits the innermost loop.
 ## Function Calls
 
 ### Function Call Syntax
-```spark
+```stim
 function_name(argument_list)
 ```
 
 ### Built-in Functions
 
 #### ask(question)
-```spark
+```stim
 ask(string_expression)
 ```
 
 #### confirm(message)  
-```spark
+```stim
 confirm(string_expression)
 ```
 
 #### wait_for_response()
-```spark
+```stim
 wait_for_response()
 ```
 
 #### create_file(filename, content)
-```spark
+```stim
 create_file(string_expression, string_expression)
 ```
 
 ### Custom Functions
 Custom functions are treated as simple function calls:
 
-```spark
+```stim
 git_init()
 git_commit("message")
 deploy_to_environment(env_name)
@@ -368,7 +368,7 @@ deploy_to_environment(env_name)
 ### Single-line Comments
 Comments start with `//` and continue to the end of the line:
 
-```spark
+```stim
 // This is a comment
 ask("Hello") // Comment after statement
 ```
@@ -379,7 +379,7 @@ Comments can appear:
 - At the end of a statement line
 - Multiple consecutive comment lines
 
-```spark
+```stim
 // File header comment
 command example {
     // Variable declarations
@@ -398,7 +398,7 @@ command example {
 ### Complete Grammar (EBNF)
 
 ```ebnf
-spark_file = command_declaration
+stim_file = command_declaration
 
 command_declaration = "command" IDENTIFIER "{" statement_list "}"
 

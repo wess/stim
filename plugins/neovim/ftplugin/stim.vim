@@ -1,4 +1,4 @@
-" Spark filetype plugin
+" Stim filetype plugin
 " Only load once per buffer
 if exists('b:did_ftplugin')
   finish
@@ -24,16 +24,16 @@ setlocal foldmethod=indent
 setlocal foldlevelstart=1
 
 " Indentation
-setlocal indentexpr=SparkIndent()
+setlocal indentexpr=StimIndent()
 setlocal indentkeys+=0},0{,o,O
 
 " Matchpairs for % jumping
 setlocal matchpairs+=<:>
 
 " Buffer-local key mappings
-nnoremap <buffer> <leader>sc :SparkCompile<CR>
-nnoremap <buffer> <leader>sr :SparkCompileAndRun<CR>
-nnoremap <buffer> <leader>sn :SparkNewCommand<CR>
+nnoremap <buffer> <leader>sc :StimCompile<CR>
+nnoremap <buffer> <leader>sr :StimCompileAndRun<CR>
+nnoremap <buffer> <leader>sn :StimNewCommand<CR>
 
 " Text objects for command blocks
 vnoremap <buffer> ic :<C-u>call <SID>SelectCommandBlock('i')<CR>
@@ -41,13 +41,13 @@ vnoremap <buffer> ac :<C-u>call <SID>SelectCommandBlock('a')<CR>
 onoremap <buffer> ic :<C-u>call <SID>SelectCommandBlock('i')<CR>
 onoremap <buffer> ac :<C-u>call <SID>SelectCommandBlock('a')<CR>
 
-" Spark-specific abbreviations
+" Stim-specific abbreviations
 iabbrev <buffer> cmd command
 iabbrev <buffer> conf confirm
 iabbrev <buffer> resp wait_for_response()
 
-" Function to handle Spark indentation
-function! SparkIndent()
+" Function to handle Stim indentation
+function! StimIndent()
   let lnum = prevnonblank(v:lnum - 1)
   if lnum == 0
     return 0
@@ -97,8 +97,8 @@ function! s:SelectCommandBlock(mode)
   normal! o
 endfunction
 
-" Completion function for Spark keywords and functions
-function! SparkComplete(findstart, base)
+" Completion function for Stim keywords and functions
+function! StimComplete(findstart, base)
   if a:findstart
     " Find the start of the word
     let line = getline('.')
@@ -129,7 +129,7 @@ function! SparkComplete(findstart, base)
 endfunction
 
 " Set completion function
-setlocal completefunc=SparkComplete
+setlocal completefunc=StimComplete
 
 " Restore compatibility options
 let &cpo = s:save_cpo

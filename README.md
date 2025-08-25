@@ -1,4 +1,4 @@
-# Spark ⚡
+# Stim ⚡
 
 **A powerful DSL for building sophisticated Claude Code commands with control flow, variables, and complex logic.**
 
@@ -6,9 +6,9 @@
 
 ---
 
-## 🚀 What is Spark?
+## 🚀 What is Stim?
 
-Spark transforms the way you create Claude Code commands. Instead of writing complex, hard-to-maintain markdown instructions, you write clear, programmatic `.spark` files with loops, conditionals, and variables that compile into Claude-ready `.md` commands.
+Stim transforms the way you create Claude Code commands. Instead of writing complex, hard-to-maintain markdown instructions, you write clear, programmatic `.stim` files with loops, conditionals, and variables that compile into Claude-ready `.md` commands.
 
 ### The Problem
 ```markdown
@@ -20,8 +20,8 @@ Once we are done, save the spec as SPEC.md...
 Ask if the user wants to create a git repo...
 ```
 
-### The Spark Solution
-```spark
+### The Stim Solution
+```stim
 command brainstorm {
   questions = ["What problem?", "Who are users?", "What constraints?"]
   
@@ -52,31 +52,70 @@ command brainstorm {
 - **📁 File Operations** - Create, read, and manipulate files programmatically
 - **🎯 Type-Safe** - Built with TypeScript for reliability and great developer experience
 - **⚡ Fast** - Powered by Bun for lightning-fast compilation
+- **🔥 Standalone** - Compiles to a single executable binary with no dependencies
 - **🛠️ Extensible** - Clean architecture ready for future enhancements
 
 ## 📦 Installation
 
-### Prerequisites
+### Option 1: Download Pre-built Binary (Recommended)
+
+Download the latest release for your platform from [GitHub Releases](https://github.com/user/stim/releases):
+
+**Linux (x64):**
+```bash
+curl -L https://github.com/user/stim/releases/latest/download/stim-linux-x64 -o stim
+chmod +x stim
+sudo mv stim /usr/local/bin/
+```
+
+**macOS (Intel):**
+```bash
+curl -L https://github.com/user/stim/releases/latest/download/stim-darwin-x64 -o stim
+chmod +x stim
+sudo mv stim /usr/local/bin/
+```
+
+**macOS (Apple Silicon):**
+```bash
+curl -L https://github.com/user/stim/releases/latest/download/stim-darwin-arm64 -o stim
+chmod +x stim
+sudo mv stim /usr/local/bin/
+```
+
+**Windows (x64):**
+Download `stim-windows-x64.exe` from releases and add it to your PATH.
+
+**Verify installation:**
+```bash
+stim version
+```
+
+### Option 2: Build from Source
+
+**Prerequisites:**
 - [Bun](https://bun.sh) (latest version)
 - [Claude Code](https://claude.ai/code)
 
-### Setup
+**Setup:**
 ```bash
 # Clone the repository
 git clone <repository-url>
-cd spark
+cd stim
 
 # Install dependencies
 bun install
 
+# Build executable
+bun run build
+
 # Verify installation
-bun run dev --help
+./dist/stim version
 ```
 
 ## 🏃‍♂️ Quick Start
 
-1. **Create a `.spark` file:**
-```spark
+1. **Create a `.stim` file:**
+```stim
 command hello {
   name = "World"
   ask("What's your name?")
@@ -87,7 +126,8 @@ command hello {
 
 2. **Compile to Claude command:**
 ```bash
-bun run dev compile hello.spark
+bun run build
+./dist/stim compile hello.stim
 ```
 
 3. **Use in Claude Code:**
@@ -106,38 +146,45 @@ bun run dev compile hello.spark
 
 ## 💡 Example Commands
 
-All your existing Claude commands, now in Spark:
+All your existing Claude commands, now in Stim:
 
-- **[brainstorm.spark](examples/brainstorm.spark)** - Interactive spec development
-- **[commit.spark](examples/commit.spark)** - Semantic commit workflow  
-- **[plan.spark](examples/plan.spark)** - Project planning with phases
-- **[session-summary.spark](examples/session-summary.spark)** - Session analysis
-- **[security-review.spark](examples/security-review.spark)** - Security assessment
-- **[recall.spark](examples/recall.spark)** - Context management system
+- **[brainstorm.stim](examples/brainstorm.stim)** - Interactive spec development
+- **[commit.stim](examples/commit.stim)** - Semantic commit workflow  
+- **[plan.stim](examples/plan.stim)** - Project planning with phases
+- **[session-summary.stim](examples/session-summary.stim)** - Session analysis
+- **[security-review.stim](examples/security-review.stim)** - Security assessment
+- **[recall.stim](examples/recall.stim)** - Context management system
 
 ## 🛠️ Development
 
 ### Commands
 ```bash
-# Compile a .spark file
-bun run dev compile examples/brainstorm.spark
-
-# Build standalone executable
+# Build standalone executable (creates dist/stim binary)
 bun run build
 
-# Run development mode
-bun run dev
+# Build for all platforms (Linux, macOS, Windows)
+bun run build:all
+
+# Compile a .stim file using the standalone executable
+./dist/stim compile examples/brainstorm.stim
+
+# Run in development mode (without building)
+bun run dev compile examples/brainstorm.stim
+
+# Show version and help
+./dist/stim version
+./dist/stim help
 ```
 
 ### Project Structure
 ```
-spark/
+stim/
 ├── src/
 │   ├── types/           # Type definitions
-│   ├── parser/          # .spark file parser
+│   ├── parser/          # .stim file parser
 │   ├── compiler/        # Markdown generator
 │   └── cli/             # Command-line interface
-├── examples/            # Example .spark commands
+├── examples/            # Example .stim commands
 ├── docs/               # Documentation
 └── dist/               # Built executable
 ```
@@ -145,7 +192,7 @@ spark/
 ## 🔧 Language Overview
 
 ### Basic Syntax
-```spark
+```stim
 command mycommand {
   // Variables
   name = "value"
@@ -176,9 +223,9 @@ command mycommand {
 - **Git Operations:** `git_init()`, `git_commit()`, `git_push()`
 - **GitHub Integration:** `github_create_repo()`, `github_create_pr()`
 
-## 🌟 Why Spark?
+## 🌟 Why Stim?
 
-| **Traditional Markdown** | **Spark** |
+| **Traditional Markdown** | **Stim** |
 |-------------------------|-----------|
 | Hard to maintain complex logic | Clean, readable control flow |
 | Repetitive instructions | Reusable variables and loops |
@@ -207,9 +254,10 @@ We welcome contributions! See [CONTRIBUTING.md](docs/Contributing.md) for guidel
 ### Development Setup
 ```bash
 git clone <repository-url>
-cd spark
+cd stim
 bun install
-bun run dev compile examples/brainstorm.spark
+bun run build
+./dist/stim compile examples/brainstorm.stim
 ```
 
 ## 📄 License
@@ -224,4 +272,4 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ---
 
-**Ready to spark your Claude Code workflow?** [Get started with our tutorial](docs/Tutorial.md) 🚀
+**Ready to stim your Claude Code workflow?** [Get started with our tutorial](docs/Tutorial.md) 🚀

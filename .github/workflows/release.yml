@@ -1,0 +1,149 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., v1.0.0)'
+        required: true
+        default: 'v1.0.0'
+
+jobs:
+  build:
+    name: Build ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: linux-x64
+            artifact: stim-linux-x64
+          - os: macos-latest
+            target: darwin-x64
+            artifact: stim-darwin-x64
+          - os: macos-14
+            target: darwin-arm64
+            artifact: stim-darwin-arm64
+          - os: windows-latest
+            target: windows-x64
+            artifact: stim-windows-x64.exe
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Build executable
+        run: bun build --compile --target=bun-${{ matrix.target }} --outfile=${{ matrix.artifact }} src/main.ts
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.artifact }}
+
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+
+      - name: Prepare release assets
+        run: |
+          mkdir -p ./release
+          cp ./artifacts/stim-linux-x64/stim-linux-x64 ./release/
+          cp ./artifacts/stim-darwin-x64/stim-darwin-x64 ./release/
+          cp ./artifacts/stim-darwin-arm64/stim-darwin-arm64 ./release/
+          cp ./artifacts/stim-windows-x64.exe/stim-windows-x64.exe ./release/
+          
+          # Make binaries executable
+          chmod +x ./release/stim-*
+          
+          # Create checksums
+          cd ./release
+          sha256sum * > checksums.txt
+
+      - name: Get version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Stim ${{ steps.version.outputs.VERSION }}
+          tag_name: ${{ steps.version.outputs.VERSION }}
+          body: |
+            # Stim ${{ steps.version.outputs.VERSION }}
+            
+            ## 🚀 Installation
+            
+            Download the appropriate binary for your platform:
+            
+            ### Linux (x64)
+            ```bash
+            curl -L https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.VERSION }}/stim-linux-x64 -o stim
+            chmod +x stim
+            sudo mv stim /usr/local/bin/
+            ```
+            
+            ### macOS (Intel)
+            ```bash
+            curl -L https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.VERSION }}/stim-darwin-x64 -o stim
+            chmod +x stim
+            sudo mv stim /usr/local/bin/
+            ```
+            
+            ### macOS (Apple Silicon)
+            ```bash
+            curl -L https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.VERSION }}/stim-darwin-arm64 -o stim
+            chmod +x stim
+            sudo mv stim /usr/local/bin/
+            ```
+            
+            ### Windows (x64)
+            Download `stim-windows-x64.exe` and add it to your PATH.
+            
+            ## ✅ Verify Installation
+            ```bash
+            stim version
+            ```
+            
+            ## 📖 Usage
+            ```bash
+            # Compile a .stim file to Claude command
+            stim compile your-command.stim
+            
+            # Show help
+            stim help
+            ```
+            
+            ## 🔐 Checksums
+            See `checksums.txt` for SHA256 hashes of all binaries.
+            
+          files: |
+            ./release/stim-linux-x64
+            ./release/stim-darwin-x64
+            ./release/stim-darwin-arm64
+            ./release/stim-windows-x64.exe
+            ./release/checksums.txt
+          draft: false
+          prerelease: false

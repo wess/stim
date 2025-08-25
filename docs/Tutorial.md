@@ -1,6 +1,6 @@
-# Spark Tutorial
+# Stim Tutorial
 
-A comprehensive guide to building sophisticated Claude Code commands with Spark.
+A comprehensive guide to building sophisticated Claude Code commands with Stim.
 
 ## Table of Contents
 
@@ -17,7 +17,7 @@ A comprehensive guide to building sophisticated Claude Code commands with Spark.
 
 ## Introduction
 
-This tutorial will teach you how to build powerful Claude Code commands using Spark. By the end, you'll be able to create complex, interactive workflows that automate your development tasks.
+This tutorial will teach you how to build powerful Claude Code commands using Stim. By the end, you'll be able to create complex, interactive workflows that automate your development tasks.
 
 ### What We'll Build
 
@@ -30,9 +30,9 @@ We're going to build a comprehensive code review command that:
 ## Basic Concepts
 
 ### Commands
-Every Spark file defines a single command:
+Every Stim file defines a single command:
 
-```spark
+```stim
 command mycommand {
   // Your logic here
 }
@@ -41,7 +41,7 @@ command mycommand {
 ### Statements
 Commands contain statements that execute in order:
 
-```spark
+```stim
 command example {
   ask("What's your name?")          // Statement 1
   wait_for_response()               // Statement 2
@@ -50,10 +50,10 @@ command example {
 ```
 
 ### Compilation
-Spark compiles your `.spark` file into a `.md` file that Claude Code can execute:
+Stim compiles your `.stim` file into a `.md` file that Claude Code can execute:
 
 ```bash
-bun run dev compile mycommand.spark
+bun run build && ./dist/stim compile mycommand.stim
 # Creates ~/.claude/commands/mycommand.md
 ```
 
@@ -61,7 +61,7 @@ bun run dev compile mycommand.spark
 
 Let's start with a simple greeting command:
 
-```spark
+```stim
 command greet {
   ask("What's your name?")
   wait_for_response()
@@ -69,10 +69,10 @@ command greet {
 }
 ```
 
-**Save this as `greet.spark` and compile:**
+**Save this as `greet.stim` and compile:**
 
 ```bash
-bun run dev compile greet.spark
+bun run build && ./dist/stim compile greet.stim
 ```
 
 **Test it in Claude Code:**
@@ -88,7 +88,7 @@ Variables store data you can reuse throughout your command:
 
 ### Basic Variables
 
-```spark
+```stim
 command variables_demo {
   project_name = "My Awesome Project"
   version = "1.0.0"
@@ -102,7 +102,7 @@ command variables_demo {
 
 Arrays store multiple values:
 
-```spark
+```stim
 command array_demo {
   languages = ["JavaScript", "TypeScript", "Python", "Rust"]
   
@@ -113,10 +113,10 @@ command array_demo {
 
 ### Variable Types
 
-```spark
+```stim
 command types_demo {
   // String
-  name = "Spark"
+  name = "Stim"
   
   // Number (treated as string in current version)
   port = "3000"
@@ -135,7 +135,7 @@ Control flow lets you create dynamic, responsive commands.
 
 ### Conditionals
 
-```spark
+```stim
 command conditional_demo {
   ask("Are you working on a new project?")
   wait_for_response()
@@ -152,7 +152,7 @@ command conditional_demo {
 #### For Loops
 Iterate over arrays:
 
-```spark
+```stim
 command for_loop_demo {
   tasks = ["Setup environment", "Write code", "Test", "Deploy"]
   
@@ -168,7 +168,7 @@ command for_loop_demo {
 #### While Loops
 Continue until a condition is met:
 
-```spark
+```stim
 command while_loop_demo {
   questions_complete = false
   
@@ -187,18 +187,18 @@ command while_loop_demo {
 
 ## User Interaction
 
-Spark provides several ways to interact with users:
+Stim provides several ways to interact with users:
 
 ### Ask Questions
 
-```spark
+```stim
 ask("What's your preferred programming language?")
 ask(variable_containing_question)
 ```
 
 ### Get Confirmation
 
-```spark
+```stim
 if (confirm("Do you want to proceed?")) {
   ask("Great! Let's continue.")
 }
@@ -206,7 +206,7 @@ if (confirm("Do you want to proceed?")) {
 
 ### Wait for Responses
 
-```spark
+```stim
 ask("Please describe your requirements")
 wait_for_response()
 ask("Based on your input, here's what I recommend...")
@@ -216,7 +216,7 @@ ask("Based on your input, here's what I recommend...")
 
 Create files as part of your workflow:
 
-```spark
+```stim
 command file_demo {
   ask("What should I name the new file?")
   wait_for_response()
@@ -230,9 +230,9 @@ command file_demo {
 
 ## Building a Complete Command
 
-Let's build a comprehensive code review command that showcases all Spark features:
+Let's build a comprehensive code review command that showcases all Stim features:
 
-```spark
+```stim
 command code_review {
   // Configuration
   review_types = [
@@ -312,7 +312,7 @@ command code_review {
 **Compile and test:**
 
 ```bash
-bun run dev compile code_review.spark
+bun run build && ./dist/stim compile code_review.stim
 # Use with: /code_review
 ```
 
@@ -322,7 +322,7 @@ bun run dev compile code_review.spark
 
 Use variables to create dynamic questions:
 
-```spark
+```stim
 command dynamic_demo {
   user_type = "developer"
   
@@ -345,7 +345,7 @@ command dynamic_demo {
 
 Create complex decision trees:
 
-```spark
+```stim
 command nested_demo {
   if (confirm("Are you building a web app?")) {
     if (confirm("Is it a single-page application?")) {
@@ -365,7 +365,7 @@ command nested_demo {
 
 Create structured content:
 
-```spark
+```stim
 command template_demo {
   ask("What's the project name?")
   wait_for_response()
@@ -386,7 +386,7 @@ command template_demo {
 
 ### 1. Use Descriptive Variable Names
 
-```spark
+```stim
 // Good
 deployment_environments = ["staging", "production"]
 user_confirmation_required = true
@@ -398,7 +398,7 @@ flag = true
 
 ### 2. Break Complex Logic into Steps
 
-```spark
+```stim
 // Good - clear steps
 command deploy {
   // Step 1: Validate
@@ -421,7 +421,7 @@ command deploy {
 
 ### 3. Provide Clear User Feedback
 
-```spark
+```stim
 // Good - tells user what's happening
 ask("Analyzing your codebase for security vulnerabilities...")
 wait_for_response()
@@ -435,7 +435,7 @@ ask("Processing...")
 
 ### 4. Handle Edge Cases
 
-```spark
+```stim
 command robust_demo {
   if (confirm("Do you have a package.json file?")) {
     ask("Great! I'll analyze your dependencies.")
@@ -450,7 +450,7 @@ command robust_demo {
 
 ### 5. Use Consistent Naming
 
-```spark
+```stim
 // Good - consistent naming pattern
 command project_setup {
   project_name = "my-project"
@@ -468,12 +468,12 @@ command project_setup {
 
 ## Next Steps
 
-Now that you understand Spark fundamentals:
+Now that you understand Stim fundamentals:
 
 1. **Explore Examples**: Check out the `examples/` directory for real-world commands
 2. **Read the API Reference**: Learn about all available functions in [API.md](API.md)
-3. **Build Your Own**: Start converting your existing Claude commands to Spark
-4. **Contribute**: Help improve Spark by contributing examples or features
+3. **Build Your Own**: Start converting your existing Claude commands to Stim
+4. **Contribute**: Help improve Stim by contributing examples or features
 
 ## Troubleshooting
 
@@ -500,4 +500,4 @@ Now that you understand Spark fundamentals:
 
 ---
 
-**🎉 You're now ready to build powerful Claude Code commands with Spark!** Start by converting one of your existing commands, or create something entirely new.
+**🎉 You're now ready to build powerful Claude Code commands with Stim!** Start by converting one of your existing commands, or create something entirely new.

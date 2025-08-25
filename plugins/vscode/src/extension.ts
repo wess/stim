@@ -6,40 +6,43 @@ import { promisify } from 'util'
 const execAsync = promisify(exec)
 
 export function activate(context: vscode.ExtensionContext) {
-  console.log('Spark Language Support activated')
+  console.log('Stim Language Support activated')
 
   // Register compile command
-  const compileCommand = vscode.commands.registerCommand('spark.compile', async (uri?: vscode.Uri) => {
+  const compileCommand = vscode.commands.registerCommand('stim.compile', async (uri?: vscode.Uri) => {
     const fileUri = uri || vscode.window.activeTextEditor?.document.uri
     
-    if (!fileUri || path.extname(fileUri.fsPath) !== '.spark') {
-      vscode.window.showErrorMessage('Please select a .spark file to compile')
+    if (!fileUri || path.extname(fileUri.fsPath) !== '.stim') {
+      vscode.window.showErrorMessage('Please select a .stim file to compile')
       return
     }
 
     try {
-      vscode.window.showInformationMessage('Compiling Spark file...')
+      vscode.window.showInformationMessage('Compiling Stim file...')
       
-      // Find the spark project root (where package.json is)
+      // Find the stim project root (where package.json is)
       const workspaceFolder = vscode.workspace.getWorkspaceFolder(fileUri)
       if (!workspaceFolder) {
         vscode.window.showErrorMessage('No workspace folder found')
         return
       }
 
-      // Execute the compile command
+      // Build first, then compile
+      await execAsync('bun run build', { cwd: workspaceFolder.uri.fsPath })
+      
+      // Execute the compile command using the standalone executable
       const { stdout, stderr } = await execAsync(
-        `bun run dev compile "${fileUri.fsPath}"`,
+        `./dist/stim compile "${fileUri.fsPath}"`,
         { cwd: workspaceFolder.uri.fsPath }
       )
 
       if (stderr) {
         vscode.window.showErrorMessage(`Compilation failed: ${stderr}`)
       } else {
-        vscode.window.showInformationMessage('✓ Spark file compiled successfully!')
+        vscode.window.showInformationMessage('✓ Stim file compiled successfully!')
         
         // Show output in output channel
-        const outputChannel = vscode.window.createOutputChannel('Spark')
+        const outputChannel = vscode.window.createOutputChannel('Stim')
         outputChannel.appendLine(stdout)
         outputChannel.show()
       }
@@ -49,20 +52,20 @@ export function activate(context: vscode.ExtensionContext) {
   })
 
   // Register compile and run command
-  const compileAndRunCommand = vscode.commands.registerCommand('spark.compileAndRun', async (uri?: vscode.Uri) => {
+  const compileAndRunCommand = vscode.commands.registerCommand('stim.compileAndRun', async (uri?: vscode.Uri) => {
     const fileUri = uri || vscode.window.activeTextEditor?.document.uri
     
-    if (!fileUri || path.extname(fileUri.fsPath) !== '.spark') {
-      vscode.window.showErrorMessage('Please select a .spark file to compile')
+    if (!fileUri || path.extname(fileUri.fsPath) !== '.stim') {
+      vscode.window.showErrorMessage('Please select a .stim file to compile')
       return
     }
 
     try {
       // First compile
-      await vscode.commands.executeCommand('spark.compile', fileUri)
+      await vscode.commands.executeCommand('stim.compile', fileUri)
       
       // Extract command name from file
-      const fileName = path.basename(fileUri.fsPath, '.spark')
+      const fileName = path.basename(fileUri.fsPath, '.stim')
       
       // Show instructions for running in Claude Code
       const message = `Command compiled! Run in Claude Code with: /${fileName}`
@@ -81,7 +84,7 @@ export function activate(context: vscode.ExtensionContext) {
   })
 
   // Register new command template
-  const newCommandCommand = vscode.commands.registerCommand('spark.newCommand', async () => {
+  const newCommandCommand = vscode.commands.registerCommand('stim.newCommand', async () => {
     const commandName = await vscode.window.showInputBox({
       prompt: 'Enter command name',
       placeHolder: 'my_command',
@@ -108,18 +111,18 @@ export function activate(context: vscode.ExtensionContext) {
 
     const doc = await vscode.workspace.openTextDocument({
       content: template,
-      language: 'spark'
+      language: 'stim'
     })
 
     await vscode.window.showTextDocument(doc)
-    vscode.window.showInformationMessage(`New Spark command '${commandName}' created!`)
+    vscode.window.showInformationMessage(`New Stim command '${commandName}' created!`)
   })
 
   // Register diagnostic provider for syntax validation
-  const diagnostics = vscode.languages.createDiagnosticCollection('spark')
+  const diagnostics = vscode.languages.createDiagnosticCollection('stim')
   
   const validateDocument = (document: vscode.TextDocument) => {
-    if (document.languageId !== 'spark') return
+    if (document.languageId !== 'stim') return
 
     const diagnosticsList: vscode.Diagnostic[] = []
     const text = document.getText()
@@ -211,5 +214,5 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 export function deactivate() {
-  console.log('Spark Language Support deactivated')
+  console.log('Stim Language Support deactivated')
 }

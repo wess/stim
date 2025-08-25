@@ -1,19 +1,19 @@
 " Spark compilation functions
-" Functions for compiling .spark files
+" Functions for compiling .stim files
 
 " Compile the current file
-function! spark#compile#current_file()
-  if &filetype !=# 'spark'
+function! stim#compile#current_file()
+  if &filetype !=# 'stim'
     echo 'Not a Spark file'
     return
   endif
   
   let filename = expand('%:p')
-  call spark#compile#file(filename)
+  call stim#compile#file(filename)
 endfunction
 
 " Compile a specific file
-function! spark#compile#file(filename)
+function! stim#compile#file(filename)
   if !filereadable(a:filename)
     echohl ErrorMsg
     echo 'File not found: ' . a:filename
@@ -23,8 +23,8 @@ function! spark#compile#file(filename)
   
   echo 'Compiling ' . fnamemodify(a:filename, ':t') . '...'
   
-  " Find the spark project root
-  let project_root = spark#util#find_project_root()
+  " Find the stim project root
+  let project_root = stim#util#find_project_root()
   if empty(project_root)
     echohl ErrorMsg
     echo 'Could not find Spark project root (no package.json found)'
@@ -32,8 +32,25 @@ function! spark#compile#file(filename)
     return
   endif
   
+  " Build first if needed
+  if !exists('s:stim_built') || s:stim_built == 0
+    echo 'Building Stim...'
+    let build_output = system('cd "' . project_root . '" && ' . g:stim_build_command)
+    let build_exit_code = v:shell_error
+    
+    if build_exit_code != 0
+      echohl ErrorMsg
+      echo 'Build failed:'
+      echo trim(build_output)
+      echohl None
+      return
+    endif
+    
+    let s:stim_built = 1
+  endif
+  
   " Build the compile command
-  let cmd = g:spark_compile_command . ' "' . a:filename . '"'
+  let cmd = g:stim_compile_command . ' "' . a:filename . '"'
   
   " Execute the command
   let output = system('cd "' . project_root . '" && ' . cmd)
@@ -51,15 +68,15 @@ function! spark#compile#file(filename)
     echohl None
     
     " Show errors in quickfix if enabled
-    if g:spark_show_errors
-      call spark#compile#show_errors(output)
+    if g:stim_show_errors
+      call stim#compile#show_errors(output)
     endif
   endif
 endfunction
 
 " Compile and show run instructions
-function! spark#compile#compile_and_run()
-  call spark#compile#current_file()
+function! stim#compile#compile_and_run()
+  call stim#compile#current_file()
   
   if v:shell_error == 0
     let command_name = expand('%:t:r')
@@ -77,7 +94,7 @@ function! spark#compile#compile_and_run()
 endfunction
 
 " Parse compilation errors and show in quickfix
-function! spark#compile#show_errors(output)
+function! stim#compile#show_errors(output)
   let errors = []
   let lines = split(a:output, '\n')
   
@@ -101,9 +118,9 @@ function! spark#compile#show_errors(output)
 endfunction
 
 " Auto-compile on save
-function! spark#compile#setup_auto_compile()
-  augroup spark_auto_compile
+function! stim#compile#setup_auto_compile()
+  augroup stim_auto_compile
     autocmd!
-    autocmd BufWritePost <buffer> call spark#compile#current_file()
+    autocmd BufWritePost <buffer> call stim#compile#current_file()
   augroup END
 endfunction

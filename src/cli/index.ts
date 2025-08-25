@@ -1,17 +1,29 @@
 import { readFileSync, writeFileSync, existsSync } from 'fs'
-import { resolve, basename } from 'path'
+import { resolve, basename, dirname, join } from 'path'
 import { parseCommand } from '../parser/index.js'
 import { compileCommand } from '../compiler/index.js'
+
+// Get version from package.json
+const getVersion = () => {
+  try {
+    const packagePath = join(dirname(import.meta.url.replace('file://', '')), '../../package.json')
+    const packageJson = JSON.parse(readFileSync(packagePath, 'utf-8'))
+    return packageJson.version || '1.0.0'
+  } catch {
+    return '1.0.0'
+  }
+}
 
 export const main = () => {
   const args = process.argv.slice(2)
   
   if (args.length === 0) {
-    console.log('Usage: spark <command> [options]')
+    console.log('Usage: stim <command> [options]')
     console.log('')
     console.log('Commands:')
-    console.log('  compile <file.spark>  Compile .spark file to Claude command')
-    console.log('  help                  Show this help')
+    console.log('  compile <file.stim>  Compile .stim file to Claude command')
+    console.log('  version              Show version information')
+    console.log('  help                 Show this help')
     return
   }
   
@@ -21,13 +33,27 @@ export const main = () => {
     case 'compile':
       handleCompile(args.slice(1))
       break
+    case 'version':
+    case '-v':
+    case '--version':
+      console.log(`Stim v${getVersion()}`)
+      console.log('DSL for Claude Code commands')
+      console.log('https://github.com/user/stim')
+      break
     case 'help':
-      console.log('Spark - DSL for Claude Code commands')
+    case '-h':
+    case '--help':
+      console.log(`Stim v${getVersion()} - DSL for Claude Code commands`)
       console.log('')
-      console.log('Usage: spark compile <file.spark>')
+      console.log('Usage: stim compile <file.stim>')
+      console.log('')
+      console.log('Commands:')
+      console.log('  compile <file.stim>  Compile .stim file to Claude command')
+      console.log('  version              Show version information')
+      console.log('  help                 Show this help')
       console.log('')
       console.log('Example:')
-      console.log('  spark compile brainstorm.spark')
+      console.log('  stim compile brainstorm.stim')
       console.log('  # Generates ~/.claude/commands/brainstorm.md')
       break
     default:
@@ -39,7 +65,7 @@ export const main = () => {
 const handleCompile = (args: string[]) => {
   if (args.length === 0) {
     console.error('Error: No input file specified')
-    console.error('Usage: spark compile <file.spark>')
+    console.error('Usage: stim compile <file.stim>')
     process.exit(1)
   }
   
@@ -50,8 +76,8 @@ const handleCompile = (args: string[]) => {
     process.exit(1)
   }
   
-  if (!inputFile.endsWith('.spark')) {
-    console.error('Error: Input file must have .spark extension')
+  if (!inputFile.endsWith('.stim')) {
+    console.error('Error: Input file must have .stim extension')
     process.exit(1)
   }
   

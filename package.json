@@ -1,11 +1,13 @@
 {
-  "name": "spark",
+  "name": "stim",
   "module": "src/main.ts",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "bun run src/main.ts",
-    "build": "bun build src/main.ts --outfile=dist/spark --target=bun",
-    "compile": "bun run src/main.ts compile"
+    "build": "bun build --compile --outfile=dist/stim src/main.ts",
+    "build:all": "./scripts/build-all.sh",
+    "compile": "./dist/stim compile"
   },
   "devDependencies": {
     "@types/bun": "latest"

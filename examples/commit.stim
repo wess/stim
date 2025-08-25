@@ -23,13 +23,7 @@ command commit {
   
   ask("Stage the specified files and create the commit with the formatted message")
   
-  rules = [
-    "Only commit files from this session",
-    "No generic messages like 'update files'",
-    "Ensure code compiles/runs before committing",
-    "Don't mention tools or AI assistants in commit messages",
-    "Use conventional commit format: type(scope): description"
-  ]
+  rules = ["Only commit files from this session", "No generic messages like 'update files'", "Ensure code compiles/runs before committing", "Don't mention tools or AI assistants in commit messages", "Use conventional commit format: type(scope): description"]
   
   ask("Follow these rules: " + rules.join("; "))
 }

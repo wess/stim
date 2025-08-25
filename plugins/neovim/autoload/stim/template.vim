@@ -2,7 +2,7 @@
 " Functions for creating new Spark commands and snippets
 
 " Create a new command template
-function! spark#template#new_command(...)
+function! stim#template#new_command(...)
   let command_name = ''
   
   " Get command name from argument or prompt
@@ -26,11 +26,11 @@ function! spark#template#new_command(...)
   endif
   
   " Generate template
-  let template = spark#template#basic_command(command_name)
+  let template = stim#template#basic_command(command_name)
   
   " Create new buffer with template
   enew
-  setfiletype spark
+  setfiletype stim
   call setline(1, split(template, '\n'))
   
   " Position cursor at first edit point
@@ -40,7 +40,7 @@ function! spark#template#new_command(...)
 endfunction
 
 " Generate basic command template
-function! spark#template#basic_command(name)
+function! stim#template#basic_command(name)
   return 'command ' . a:name . ' {' . "\n"
         \ . '  ask("What would you like to do?")' . "\n"
         \ . '  wait_for_response()' . "\n"
@@ -54,7 +54,7 @@ function! spark#template#basic_command(name)
 endfunction
 
 " Generate interactive survey template
-function! spark#template#survey()
+function! stim#template#survey()
   return 'questions = [' . "\n"
         \ . '  "Question 1?",'. "\n"
         \ . '  "Question 2?",'. "\n"
@@ -70,7 +70,7 @@ function! spark#template#survey()
 endfunction
 
 " Generate feature selection template
-function! spark#template#feature_selection()
+function! stim#template#feature_selection()
   return 'features = ["Feature 1", "Feature 2", "Feature 3"]' . "\n"
         \ . '' . "\n"
         \ . 'for feature in features {' . "\n"
@@ -81,7 +81,7 @@ function! spark#template#feature_selection()
 endfunction
 
 " Generate git workflow template
-function! spark#template#git_workflow()
+function! stim#template#git_workflow()
   return 'if (confirm("Initialize git repository?")) {' . "\n"
         \ . '  git_init()' . "\n"
         \ . '  git_commit("Initial commit")' . "\n"
@@ -90,21 +90,21 @@ function! spark#template#git_workflow()
 endfunction
 
 " Insert template at cursor position
-function! spark#template#insert_at_cursor(template_func)
+function! stim#template#insert_at_cursor(template_func)
   let template = call(a:template_func, [])
   let lines = split(template, '\n')
   call append(line('.'), lines)
 endfunction
 
 " Template insertion commands
-function! spark#template#insert_survey()
-  call spark#template#insert_at_cursor('spark#template#survey')
+function! stim#template#insert_survey()
+  call stim#template#insert_at_cursor('stim#template#survey')
 endfunction
 
-function! spark#template#insert_features()
-  call spark#template#insert_at_cursor('spark#template#feature_selection')
+function! stim#template#insert_features()
+  call stim#template#insert_at_cursor('stim#template#feature_selection')
 endfunction
 
-function! spark#template#insert_git()
-  call spark#template#insert_at_cursor('spark#template#git_workflow')
+function! stim#template#insert_git()
+  call stim#template#insert_at_cursor('stim#template#git_workflow')
 endfunction

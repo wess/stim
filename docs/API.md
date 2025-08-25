@@ -1,6 +1,6 @@
-# Spark API Reference
+# Stim API Reference
 
-Complete reference for Spark syntax, functions, and features.
+Complete reference for Stim syntax, functions, and features.
 
 ## Table of Contents
 
@@ -16,9 +16,9 @@ Complete reference for Spark syntax, functions, and features.
 
 ### Command Declaration
 
-Every Spark file must contain exactly one command declaration:
+Every Stim file must contain exactly one command declaration:
 
-```spark
+```stim
 command command_name {
   // Command body
 }
@@ -30,7 +30,7 @@ command command_name {
 - Command names are used as the Claude Code command (`/command_name`)
 
 **Examples:**
-```spark
+```stim
 command hello { }           // Valid: /hello
 command deploy_app { }      // Valid: /deploy_app
 command buildProject { }    // Valid: /buildProject
@@ -41,7 +41,7 @@ command 123invalid { }      // Invalid: starts with number
 
 The command body contains zero or more statements:
 
-```spark
+```stim
 command example {
   statement1()
   statement2()
@@ -55,14 +55,14 @@ command example {
 
 Variables are declared using assignment syntax:
 
-```spark
+```stim
 variable_name = value
 ```
 
 ### Variable Types
 
 #### Strings
-```spark
+```stim
 name = "John Doe"
 message = 'Hello world'
 empty_string = ""
@@ -71,19 +71,19 @@ empty_string = ""
 #### Numbers
 Numbers are currently treated as strings:
 
-```spark
+```stim
 port = "3000"
 timeout = "30"
 ```
 
 #### Booleans
-```spark
+```stim
 is_active = true
 is_complete = false
 ```
 
 #### Arrays
-```spark
+```stim
 items = ["item1", "item2", "item3"]
 numbers = ["1", "2", "3"]
 mixed = ["string", "123", "true"]
@@ -101,7 +101,7 @@ Variables can be used in:
 
 Variables are scoped to the command and persist throughout execution:
 
-```spark
+```stim
 command scope_example {
   name = "initial"
   
@@ -120,14 +120,14 @@ command scope_example {
 ### Conditional Statements
 
 #### If Statements
-```spark
+```stim
 if (condition) {
   // Statements executed if condition is true
 }
 ```
 
 #### If-Else Statements
-```spark
+```stim
 if (condition) {
   // Statements for true condition
 } else {
@@ -140,7 +140,7 @@ if (condition) {
 #### For Loops
 Iterate over array elements:
 
-```spark
+```stim
 for variable_name in array_name {
   // Statements executed for each element
   // variable_name contains the current element
@@ -148,7 +148,7 @@ for variable_name in array_name {
 ```
 
 **Example:**
-```spark
+```stim
 languages = ["JavaScript", "Python", "Rust"]
 for lang in languages {
   ask("Do you use " + lang + "?")
@@ -158,14 +158,14 @@ for lang in languages {
 #### While Loops
 Execute while condition is true:
 
-```spark
+```stim
 while (condition) {
   // Statements executed while condition is true
 }
 ```
 
 **Example:**
-```spark
+```stim
 count = 0
 while (count < 3) {
   ask("Iteration " + count)
@@ -178,7 +178,7 @@ while (count < 3) {
 #### Break Statement
 Exit the current loop:
 
-```spark
+```stim
 for item in items {
   if (item == "stop") {
     break
@@ -198,7 +198,7 @@ Ask the user a question and display it in Claude Code.
 - `question` (string | variable): The question to ask
 
 **Examples:**
-```spark
+```stim
 ask("What is your name?")
 ask(stored_question)
 ask("Hello " + user_name + ", how are you?")
@@ -215,7 +215,7 @@ Ask for yes/no confirmation from the user.
 - `message` (string | variable): The confirmation message
 
 **Examples:**
-```spark
+```stim
 if (confirm("Are you ready to proceed?")) {
   ask("Great! Let's continue.")
 }
@@ -232,7 +232,7 @@ Explicitly wait for user response before continuing.
 **Parameters:** None
 
 **Example:**
-```spark
+```stim
 ask("Please describe your requirements")
 wait_for_response()
 ask("Thank you for the details!")
@@ -253,7 +253,7 @@ Create a file with specified content.
 - `content` (string | variable): The content to write to the file
 
 **Examples:**
-```spark
+```stim
 create_file("README.md", "project_readme")
 create_file("config.json", config_template)
 create_file("output.txt", "Hello, world!")
@@ -269,7 +269,7 @@ Create file "README.md" with content: project_readme
 These are placeholders for functions that would be implemented by the runtime:
 
 #### Git Operations
-```spark
+```stim
 git_init()
 git_commit("commit message")
 git_push()
@@ -277,14 +277,14 @@ git_status()
 ```
 
 #### GitHub Operations
-```spark
+```stim
 github_create_repo()
 github_create_pr()
 github_create_issue("title", "body")
 ```
 
 #### File System Operations
-```spark
+```stim
 read_file("path/to/file")
 append_file("path/to/file", "content")
 delete_file("path/to/file")
@@ -297,7 +297,7 @@ delete_file("path/to/file")
 #### Addition (+)
 Used for string concatenation:
 
-```spark
+```stim
 result = "Hello " + "World"        // "Hello World"
 message = "Count: " + count        // "Count: 5"
 ```
@@ -305,14 +305,14 @@ message = "Count: " + count        // "Count: 5"
 ### Comparison Operators
 
 #### Equality (==)
-```spark
+```stim
 if (status == "complete") {
   ask("Task is done!")
 }
 ```
 
 #### Inequality (!=)
-```spark
+```stim
 if (status != "pending") {
   ask("Status has changed")
 }
@@ -321,21 +321,21 @@ if (status != "pending") {
 ### Logical Operators
 
 #### Logical NOT (!)
-```spark
+```stim
 if (!is_complete) {
   ask("Still working...")
 }
 ```
 
 #### Logical AND (&&)
-```spark
+```stim
 if (is_ready && has_permission) {
   ask("Starting process...")
 }
 ```
 
 #### Logical OR (||)
-```spark
+```stim
 if (is_admin || is_owner) {
   ask("Access granted")
 }
@@ -346,7 +346,7 @@ if (is_admin || is_owner) {
 #### join(separator)
 Convert array to string with separator:
 
-```spark
+```stim
 items = ["a", "b", "c"]
 result = items.join(", ")    // "a, b, c"
 ```
@@ -354,7 +354,7 @@ result = items.join(", ")    // "a, b, c"
 ## Comments
 
 ### Single-line Comments
-```spark
+```stim
 // This is a comment
 ask("Hello")  // Comment at end of line
 ```
@@ -362,7 +362,7 @@ ask("Hello")  // Comment at end of line
 ### Multi-line Comments
 Not currently supported. Use multiple single-line comments:
 
-```spark
+```stim
 // This is a multi-line comment
 // that spans several lines
 // to document complex logic
@@ -370,10 +370,10 @@ Not currently supported. Use multiple single-line comments:
 
 ## Compilation Output
 
-Understanding how Spark compiles to Claude Code markdown helps debug issues.
+Understanding how Stim compiles to Claude Code markdown helps debug issues.
 
 ### Variable Assignments
-```spark
+```stim
 name = "John"
 ```
 
@@ -383,7 +383,7 @@ Set name = John
 ```
 
 ### Control Flow
-```spark
+```stim
 if (condition) {
   ask("Hello")
 }
@@ -396,7 +396,7 @@ If condition:
 ```
 
 ### Loops
-```spark
+```stim
 for item in items {
   ask(item)
 }
@@ -409,7 +409,7 @@ For each item in items:
 ```
 
 ### Functions
-```spark
+```stim
 create_file("test.txt", "content")
 ```
 
@@ -431,9 +431,9 @@ Error: Invalid assignment: name =
 
 #### Runtime Errors
 ```
-Error: File not found: /path/to/file.spark
+Error: File not found: /path/to/file.stim
 Error: No input file specified
-Error: Input file must have .spark extension
+Error: Input file must have .stim extension
 ```
 
 ### Debugging Tips
@@ -462,7 +462,7 @@ Error: Input file must have .spark extension
 
 ## Version Compatibility
 
-This API reference is for Spark v1.0. Future versions may include:
+This API reference is for Stim v1.0. Future versions may include:
 
 ### Planned Features
 - **v1.1**: Import system, standard library, string interpolation

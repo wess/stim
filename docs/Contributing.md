@@ -1,6 +1,6 @@
-# Contributing to Spark
+# Contributing to Stim
 
-Thank you for your interest in contributing to Spark! This guide will help you get started.
+Thank you for your interest in contributing to Stim! This guide will help you get started.
 
 ## Table of Contents
 
@@ -32,11 +32,11 @@ We are committed to providing a welcoming and inclusive environment. Please:
 - **Feature Requests**: Have an idea for improvement? Share it!
 - **Code Contributions**: Fix bugs, add features, improve performance
 - **Documentation**: Improve guides, fix typos, add examples
-- **Examples**: Share useful `.spark` commands with the community
+- **Examples**: Share useful `.stim` commands with the community
 
 ### Before You Start
 
-1. Check existing [issues](https://github.com/user/spark/issues) to avoid duplicates
+1. Check existing [issues](https://github.com/user/stim/issues) to avoid duplicates
 2. For major changes, open an issue to discuss the approach first
 3. Make sure you understand the [project goals](#project-goals)
 
@@ -52,8 +52,8 @@ We are committed to providing a welcoming and inclusive environment. Please:
 
 ```bash
 # Fork the repository on GitHub, then clone your fork
-git clone https://github.com/yourusername/spark.git
-cd spark
+git clone https://github.com/yourusername/stim.git
+cd stim
 
 # Install dependencies
 bun install
@@ -62,14 +62,14 @@ bun install
 bun run dev --help
 
 # Test compilation
-bun run dev compile examples/brainstorm.spark
+bun run dev compile examples/brainstorm.stim
 ```
 
 ### Development Commands
 
 ```bash
-# Compile a .spark file
-bun run dev compile file.spark
+# Compile a .stim file
+bun run dev compile file.stim
 
 # Build executable
 bun run build
@@ -87,14 +87,14 @@ bun run lint
 ## Project Structure
 
 ```
-spark/
+stim/
 ├── src/                    # Source code
 │   ├── types/             # TypeScript type definitions
-│   ├── parser/            # .spark file parser
+│   ├── parser/            # .stim file parser
 │   ├── compiler/          # Markdown generator
 │   ├── cli/               # Command-line interface
 │   └── main.ts            # Entry point
-├── examples/              # Example .spark files
+├── examples/              # Example .stim files
 ├── docs/                  # Documentation
 ├── tests/                 # Test files (future)
 └── package.json          # Project configuration
@@ -103,7 +103,7 @@ spark/
 ### Key Files
 
 - **`src/types/index.ts`**: Core type definitions for AST nodes
-- **`src/parser/index.ts`**: Parses `.spark` files into AST
+- **`src/parser/index.ts`**: Parses `.stim` files into AST
 - **`src/compiler/index.ts`**: Converts AST to Claude-compatible markdown
 - **`src/cli/index.ts`**: Command-line interface implementation
 
@@ -121,10 +121,10 @@ spark/
 3. **Test your changes**:
    ```bash
    # Test compilation
-   bun run dev compile examples/brainstorm.spark
+   bun run dev compile examples/brainstorm.stim
    
    # Test new functionality
-   bun run dev compile your-test-file.spark
+   bun run dev compile your-test-file.stim
    ```
 
 4. **Commit your changes**:
@@ -167,10 +167,10 @@ Currently, testing is primarily manual:
 
 ```bash
 # Test basic compilation
-bun run dev compile examples/brainstorm.spark
+bun run dev compile examples/brainstorm.stim
 
 # Test error handling
-bun run dev compile non-existent.spark
+bun run dev compile non-existent.stim
 
 # Test compiled command in Claude Code
 /brainstorm
@@ -315,7 +315,7 @@ if (!match) {
 
 - **Clear examples**: Show actual code, not just descriptions
 - **Complete coverage**: Document all public APIs and features  
-- **User-focused**: Write for developers using Spark, not just contributors
+- **User-focused**: Write for developers using Stim, not just contributors
 - **Up-to-date**: Update docs with code changes
 
 ### Documentation Types
@@ -334,7 +334,7 @@ if (!match) {
 
 ## Project Goals
 
-Understanding Spark's goals helps guide contributions:
+Understanding Stim's goals helps guide contributions:
 
 ### Primary Goals
 
@@ -366,7 +366,7 @@ Understanding Spark's goals helps guide contributions:
 
 ### Resources
 
-- **[Tutorial](Tutorial.md)**: Learn Spark basics
+- **[Tutorial](Tutorial.md)**: Learn Stim basics
 - **[API Reference](API.md)**: Complete syntax documentation
 - **[Examples](Examples.md)**: Real-world patterns and usage
 
@@ -383,7 +383,7 @@ We aim to:
 Contributors are recognized through:
 - **GitHub contributors list**
 - **Changelog mentions** for significant contributions
-- **Example attribution** for contributed `.spark` commands
+- **Example attribution** for contributed `.stim` commands
 - **Documentation credits** for major doc improvements
 
 ---
@@ -392,7 +392,7 @@ Contributors are recognized through:
 
 1. Pick an issue labeled `good first issue` for your first contribution
 2. Join the discussion on existing issues and PRs
-3. Share your `.spark` commands as examples
+3. Share your `.stim` commands as examples
 4. Help improve documentation and tutorials
 
-Thank you for helping make Spark better for everyone! 🚀
+Thank you for helping make Stim better for everyone! 🚀

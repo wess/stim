@@ -1,6 +1,6 @@
 # Quickstart Guide
 
-Get up and running with Spark in 5 minutes.
+Get up and running with Stim in 5 minutes.
 
 ## Prerequisites
 
@@ -13,22 +13,22 @@ Get up and running with Spark in 5 minutes.
 ```bash
 # Clone and setup
 git clone <repository-url>
-cd spark
+cd stim
 bun install
 
 # Verify it works
 bun run dev --help
 ```
 
-You should see the Spark CLI help output.
+You should see the Stim CLI help output.
 
 ## Step 2: Your First Command
 
-Create a simple `.spark` file:
+Create a simple `.stim` file:
 
 ```bash
-# Create hello.spark
-cat > hello.spark << 'EOF'
+# Create hello.stim
+cat > hello.stim << 'EOF'
 command hello {
   ask("What's your name?")
   wait_for_response()
@@ -46,15 +46,18 @@ EOF
 ## Step 3: Compile to Claude Command
 
 ```bash
-# Compile the .spark file
-bun run dev compile hello.spark
+# Build the project first
+bun run build
+
+# Compile the .stim file using the standalone executable
+./dist/stim compile hello.stim
 
 # This creates ~/.claude/commands/hello.md
 ```
 
 You should see:
 ```
-✓ Compiled hello.spark → /Users/yourusername/.claude/commands/hello.md
+✓ Compiled hello.stim → /Users/yourusername/.claude/commands/hello.md
 Command: /hello
 ```
 
@@ -71,7 +74,7 @@ Claude will now execute your interactive command workflow!
 
 Let's create a project planning command:
 
-```spark
+```stim
 command quickplan {
   features = [
     "User authentication",
@@ -101,7 +104,8 @@ command quickplan {
 
 Compile and use it:
 ```bash
-bun run dev compile quickplan.spark
+bun run build
+./dist/stim compile quickplan.stim
 # Use with: /quickplan
 ```
 
@@ -132,4 +136,4 @@ Most common issues:
 
 ---
 
-**🎉 Congratulations!** You've created your first Spark command. Now explore the [full tutorial](Tutorial.md) to learn advanced features.
+**🎉 Congratulations!** You've created your first Stim command. Now explore the [full tutorial](Tutorial.md) to learn advanced features.
