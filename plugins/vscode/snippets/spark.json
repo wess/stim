@@ -1,0 +1,128 @@
+{
+  "Command Template": {
+    "prefix": "command",
+    "body": [
+      "command ${1:command_name} {",
+      "\t${2:// Command body}",
+      "\t$0",
+      "}"
+    ],
+    "description": "Create a new Spark command"
+  },
+  "Ask Question": {
+    "prefix": "ask",
+    "body": [
+      "ask(\"${1:question}\")",
+      "wait_for_response()"
+    ],
+    "description": "Ask user a question and wait for response"
+  },
+  "Confirmation": {
+    "prefix": "confirm",
+    "body": [
+      "if (confirm(\"${1:message}\")) {",
+      "\t${2:// Action on confirmation}",
+      "}"
+    ],
+    "description": "Ask for user confirmation"
+  },
+  "For Loop": {
+    "prefix": "for",
+    "body": [
+      "for ${1:item} in ${2:items} {",
+      "\t${3:// Loop body}",
+      "}"
+    ],
+    "description": "Create a for loop"
+  },
+  "While Loop": {
+    "prefix": "while",
+    "body": [
+      "while (${1:condition}) {",
+      "\t${2:// Loop body}",
+      "}"
+    ],
+    "description": "Create a while loop"
+  },
+  "If Statement": {
+    "prefix": "if",
+    "body": [
+      "if (${1:condition}) {",
+      "\t${2:// If body}",
+      "}"
+    ],
+    "description": "Create an if statement"
+  },
+  "If-Else Statement": {
+    "prefix": "ifelse",
+    "body": [
+      "if (${1:condition}) {",
+      "\t${2:// If body}",
+      "} else {",
+      "\t${3:// Else body}",
+      "}"
+    ],
+    "description": "Create an if-else statement"
+  },
+  "Variable Assignment": {
+    "prefix": "var",
+    "body": [
+      "${1:variable_name} = \"${2:value}\""
+    ],
+    "description": "Create a variable assignment"
+  },
+  "Array Assignment": {
+    "prefix": "array",
+    "body": [
+      "${1:array_name} = [\"${2:item1}\", \"${3:item2}\", \"${4:item3}\"]"
+    ],
+    "description": "Create an array assignment"
+  },
+  "Create File": {
+    "prefix": "createfile",
+    "body": [
+      "create_file(\"${1:filename}\", \"${2:content}\")"
+    ],
+    "description": "Create a file"
+  },
+  "Interactive Survey": {
+    "prefix": "survey",
+    "body": [
+      "questions = [",
+      "\t\"${1:Question 1}\",",
+      "\t\"${2:Question 2}\",",
+      "\t\"${3:Question 3}\"",
+      "]",
+      "",
+      "for question in questions {",
+      "\task(question)",
+      "\twait_for_response()",
+      "}"
+    ],
+    "description": "Create an interactive survey"
+  },
+  "Feature Selection": {
+    "prefix": "features",
+    "body": [
+      "features = [\"${1:Feature 1}\", \"${2:Feature 2}\", \"${3:Feature 3}\"]",
+      "",
+      "for feature in features {",
+      "\tif (confirm(\"Do you need \" + feature + \"?\")) {",
+      "\t\task(\"Great! \" + feature + \" will be included.\")",
+      "\t}",
+      "}"
+    ],
+    "description": "Create a feature selection workflow"
+  },
+  "Git Workflow": {
+    "prefix": "git",
+    "body": [
+      "if (confirm(\"Initialize git repository?\")) {",
+      "\tgit_init()",
+      "\tgit_commit(\"${1:Initial commit}\")",
+      "\task(\"Git repository initialized!\")",
+      "}"
+    ],
+    "description": "Create a git workflow"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "name": "spark",
+  "module": "src/main.ts",
+  "type": "module",
+  "scripts": {
+    "dev": "bun run src/main.ts",
+    "build": "bun build src/main.ts --outfile=dist/spark --target=bun",
+    "compile": "bun run src/main.ts compile"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}

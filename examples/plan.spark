@@ -1,0 +1,49 @@
+command plan {
+  ask("What is the spec file name?")
+  wait_for_response()
+  
+  ask("Read and understand the complete spec file. What are we building?")
+  wait_for_response()
+  
+  ask("Identify 3-7 major phases for this project")
+  wait_for_response()
+  
+  decomposition_rounds = 3
+  
+  for round in [1, 2, 3] {
+    ask("Decomposition round " + round + ": Break phases into 30min-2hr steps with concrete deliverables")
+    wait_for_response()
+  }
+  
+  validation_questions = [
+    "Can each step be tested independently?",
+    "Does each step build on previous work?", 
+    "Are there any 'big bang' moments to break down further?",
+    "Is the complexity curve smooth?"
+  ]
+  
+  for question in validation_questions {
+    ask(question)
+    wait_for_response()
+  }
+  
+  ask("Generate LLM-ready prompts for each step with context, deliverables, testing criteria, and integration requirements")
+  wait_for_response()
+  
+  plan_template = "# Project Plan\n\n## Overview\n[1-2 paragraphs]\n\n## Architecture Decisions\n[Technical choices]\n\n## Implementation Phases\n### Phase 1: Foundation\n- Step 1.1: [task]\n\n## LLM Prompts\n### Step 1.1 Prompt\n```text\n[prompt]\n```"
+  
+  todo_template = "# Implementation Status\n\n## Current Step\n[ ] Step X.Y - [description]\n\n## Completed\n- [x] Step 1.1 - [built]\n\n## Blocked/Issues\n- [ ] Issue - [description]"
+  
+  create_file("PLAN.md", plan_template)
+  create_file("todo.md", todo_template)
+  
+  rules = [
+    "Each step must be testable",
+    "No step should take more than 2 hours", 
+    "Every step must integrate with previous work",
+    "Include rollback plans for risky steps",
+    "Validate the plan makes sense before generating prompts"
+  ]
+  
+  ask("Follow these rules: " + rules.join("; "))
+}

@@ -1,0 +1,31 @@
+command brainstorm {
+  context_questions = [
+    "What problem are you solving?", 
+    "Who are the target users?", 
+    "What are your constraints?"
+  ]
+  
+  for question in context_questions {
+    ask(question)
+    wait_for_response()
+  }
+  
+  spec_complete = false
+  
+  while (!spec_complete) {
+    ask("What's the next critical question about this idea?")
+    wait_for_response()
+    
+    if (confirm("Is the spec complete?")) {
+      spec_complete = true
+    }
+  }
+  
+  create_file("SPEC.md", "generate_spec()")
+  
+  if (confirm("Create GitHub repo?")) {
+    git_init()
+    git_commit("Initial spec")
+    github_create_repo()
+  }
+}

@@ -1,0 +1,35 @@
+command commit {
+  ask("Review git status and diff output. What changes were made in this session?")
+  wait_for_response()
+  
+  ask("What files should be staged? (specific files, not 'git add .')")
+  wait_for_response()
+  
+  commit_types = ["feat", "fix", "docs", "style", "refactor", "test", "chore"]
+  
+  ask("What type of change is this? Options: " + commit_types.join(", "))
+  wait_for_response()
+  
+  ask("What is the scope? (e.g., auth, api, database)")
+  wait_for_response()
+  
+  ask("Brief description of what changed (under 72 chars, imperative mood)")
+  wait_for_response()
+  
+  if (confirm("Need a longer commit body?")) {
+    ask("Provide detailed commit body")
+    wait_for_response()
+  }
+  
+  ask("Stage the specified files and create the commit with the formatted message")
+  
+  rules = [
+    "Only commit files from this session",
+    "No generic messages like 'update files'",
+    "Ensure code compiles/runs before committing",
+    "Don't mention tools or AI assistants in commit messages",
+    "Use conventional commit format: type(scope): description"
+  ]
+  
+  ask("Follow these rules: " + rules.join("; "))
+}

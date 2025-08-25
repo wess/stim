@@ -1,0 +1,43 @@
+command session_summary {
+  ask("What is the project name for this session?")
+  wait_for_response()
+  
+  ask("Estimate session duration and conversation turns")
+  wait_for_response()
+  
+  summary_sections = [
+    "What we set out to accomplish vs what was delivered",
+    "Architecture choices, technology selections, and trade-offs discussed", 
+    "Files created/modified, key components built, git commits made",
+    "Problems encountered and how they were resolved",
+    "What worked well vs communication breakdowns/confusion",
+    "Current project state and key files with their purpose"
+  ]
+  
+  for section in summary_sections {
+    ask("Analyze: " + section)
+    wait_for_response()
+  }
+  
+  ask("What are the specific next steps for the next session?")
+  wait_for_response()
+  
+  ask("What long-term roadmap items were discussed?")
+  wait_for_response()
+  
+  guidelines = [
+    "Be specific about what was built, not just discussed",
+    "Include actual metrics (files changed, lines of code, etc.)",
+    "Identify patterns in delays or confusion",
+    "Note breakthrough moments and key insights"
+  ]
+  
+  today = new Date().toISOString().split('T')[0].replace(/-/g, '')
+  
+  ask("Create SESSION_{project-slug}_" + today + ".md following these guidelines: " + guidelines.join("; "))
+  wait_for_response()
+  
+  template = "# Session Summary: {project-name}\nDate: {date}\nDuration: {time}\nTurns: {count}\n\n## Objective & Outcome\n\n## Technical Decisions Made\n\n## Code Changes\n\n## Challenges & Solutions\n\n## Process Insights\n\n## Follow-up Actions\n### Next Session TODO\n- [ ] \n\n### Long-term Roadmap\n- [ ] \n\n## Context for Future Sessions"
+  
+  create_file("session_template.md", template)
+}

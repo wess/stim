@@ -1,0 +1,42 @@
+command security_review {
+  ask("What code files should be reviewed for security vulnerabilities?")
+  wait_for_response()
+  
+  security_areas = [
+    "Input validation and sanitization",
+    "Authentication and authorization", 
+    "SQL injection and NoSQL injection",
+    "Cross-site scripting (XSS)",
+    "Cross-site request forgery (CSRF)",
+    "Insecure direct object references",
+    "Security misconfiguration",
+    "Sensitive data exposure",
+    "Insufficient logging and monitoring",
+    "Using components with known vulnerabilities"
+  ]
+  
+  for area in security_areas {
+    ask("Review the code for: " + area)
+    wait_for_response()
+  }
+  
+  ask("Check for hardcoded secrets, API keys, or passwords")
+  wait_for_response()
+  
+  ask("Verify proper error handling that doesn't leak sensitive information")
+  wait_for_response()
+  
+  ask("Review dependency versions for known vulnerabilities")
+  wait_for_response()
+  
+  ask("Check for proper HTTPS enforcement and secure headers")
+  wait_for_response()
+  
+  ask("Provide a security assessment report with:")
+  ask("1. Critical vulnerabilities found")
+  ask("2. Medium/low severity issues")  
+  ask("3. Recommendations for fixes")
+  ask("4. Best practices to implement")
+  
+  create_file("SECURITY_REVIEW.md", "security_assessment_report")
+}

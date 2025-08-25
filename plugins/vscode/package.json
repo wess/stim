@@ -1,0 +1,113 @@
+{
+  "name": "spark-lang",
+  "displayName": "Spark Language Support",
+  "description": "Syntax highlighting and language support for Spark DSL (.spark files)",
+  "version": "1.0.0",
+  "publisher": "spark-lang",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Snippets",
+    "Other"
+  ],
+  "keywords": [
+    "spark",
+    "dsl",
+    "claude",
+    "automation",
+    "commands"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "spark",
+        "aliases": ["Spark", "spark"],
+        "extensions": [".spark"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "spark",
+        "scopeName": "source.spark",
+        "path": "./syntaxes/spark.tmLanguage.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "spark.compile",
+        "title": "Compile Spark File",
+        "category": "Spark"
+      },
+      {
+        "command": "spark.compileAndRun",
+        "title": "Compile and Test in Claude Code",
+        "category": "Spark"
+      },
+      {
+        "command": "spark.newCommand",
+        "title": "New Spark Command",
+        "category": "Spark"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "spark.compile",
+        "key": "ctrl+shift+b",
+        "mac": "cmd+shift+b",
+        "when": "resourceExtname == .spark"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "when": "resourceExtname == .spark",
+          "command": "spark.compile",
+          "group": "spark"
+        },
+        {
+          "when": "resourceExtname == .spark",
+          "command": "spark.compileAndRun",
+          "group": "spark"
+        }
+      ],
+      "explorer/context": [
+        {
+          "when": "resourceExtname == .spark",
+          "command": "spark.compile",
+          "group": "spark"
+        }
+      ]
+    },
+    "snippets": [
+      {
+        "language": "spark",
+        "path": "./snippets/spark.json"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package",
+    "publish": "vsce publish"
+  },
+  "activationEvents": [
+    "onLanguage:spark"
+  ],
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.80.0",
+    "@vscode/vsce": "^2.22.0",
+    "typescript": "^5.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/user/spark.git"
+  },
+  "license": "MIT"
+}

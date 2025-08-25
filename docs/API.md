@@ -1,0 +1,481 @@
+# Spark API Reference
+
+Complete reference for Spark syntax, functions, and features.
+
+## Table of Contents
+
+1. [Command Structure](#command-structure)
+2. [Variables](#variables)
+3. [Control Flow](#control-flow)
+4. [Built-in Functions](#built-in-functions)
+5. [Operators](#operators)
+6. [Comments](#comments)
+7. [Compilation Output](#compilation-output)
+
+## Command Structure
+
+### Command Declaration
+
+Every Spark file must contain exactly one command declaration:
+
+```spark
+command command_name {
+  // Command body
+}
+```
+
+**Rules:**
+- Command names must be valid identifiers (letters, numbers, underscore)
+- Command names cannot start with numbers
+- Command names are used as the Claude Code command (`/command_name`)
+
+**Examples:**
+```spark
+command hello { }           // Valid: /hello
+command deploy_app { }      // Valid: /deploy_app
+command buildProject { }    // Valid: /buildProject
+command 123invalid { }      // Invalid: starts with number
+```
+
+### Command Body
+
+The command body contains zero or more statements:
+
+```spark
+command example {
+  statement1()
+  statement2()
+  // ...
+}
+```
+
+## Variables
+
+### Variable Declaration
+
+Variables are declared using assignment syntax:
+
+```spark
+variable_name = value
+```
+
+### Variable Types
+
+#### Strings
+```spark
+name = "John Doe"
+message = 'Hello world'
+empty_string = ""
+```
+
+#### Numbers
+Numbers are currently treated as strings:
+
+```spark
+port = "3000"
+timeout = "30"
+```
+
+#### Booleans
+```spark
+is_active = true
+is_complete = false
+```
+
+#### Arrays
+```spark
+items = ["item1", "item2", "item3"]
+numbers = ["1", "2", "3"]
+mixed = ["string", "123", "true"]
+```
+
+### Variable Usage
+
+Variables can be used in:
+- Function arguments: `ask(variable_name)`
+- String concatenation: `"Hello " + name`
+- Conditions: `if (is_active)`
+- Array access: `for item in items`
+
+### Variable Scoping
+
+Variables are scoped to the command and persist throughout execution:
+
+```spark
+command scope_example {
+  name = "initial"
+  
+  if (true) {
+    name = "modified"     // Modifies the existing variable
+    local_var = "temp"    // Creates new variable
+  }
+  
+  ask(name)              // "modified"
+  ask(local_var)         // "temp" - available here too
+}
+```
+
+## Control Flow
+
+### Conditional Statements
+
+#### If Statements
+```spark
+if (condition) {
+  // Statements executed if condition is true
+}
+```
+
+#### If-Else Statements
+```spark
+if (condition) {
+  // Statements for true condition
+} else {
+  // Statements for false condition
+}
+```
+
+### Loops
+
+#### For Loops
+Iterate over array elements:
+
+```spark
+for variable_name in array_name {
+  // Statements executed for each element
+  // variable_name contains the current element
+}
+```
+
+**Example:**
+```spark
+languages = ["JavaScript", "Python", "Rust"]
+for lang in languages {
+  ask("Do you use " + lang + "?")
+}
+```
+
+#### While Loops
+Execute while condition is true:
+
+```spark
+while (condition) {
+  // Statements executed while condition is true
+}
+```
+
+**Example:**
+```spark
+count = 0
+while (count < 3) {
+  ask("Iteration " + count)
+  count = count + 1
+}
+```
+
+### Loop Control
+
+#### Break Statement
+Exit the current loop:
+
+```spark
+for item in items {
+  if (item == "stop") {
+    break
+  }
+  ask(item)
+}
+```
+
+## Built-in Functions
+
+### User Interaction
+
+#### ask(question)
+Ask the user a question and display it in Claude Code.
+
+**Parameters:**
+- `question` (string | variable): The question to ask
+
+**Examples:**
+```spark
+ask("What is your name?")
+ask(stored_question)
+ask("Hello " + user_name + ", how are you?")
+```
+
+**Compiled Output:**
+- String literal: `Ask the user: "What is your name?"`
+- Variable: `Ask the user the question from variable: stored_question`
+
+#### confirm(message)
+Ask for yes/no confirmation from the user.
+
+**Parameters:**
+- `message` (string | variable): The confirmation message
+
+**Examples:**
+```spark
+if (confirm("Are you ready to proceed?")) {
+  ask("Great! Let's continue.")
+}
+```
+
+**Compiled Output:**
+```
+Ask for confirmation: "Are you ready to proceed?"
+```
+
+#### wait_for_response()
+Explicitly wait for user response before continuing.
+
+**Parameters:** None
+
+**Example:**
+```spark
+ask("Please describe your requirements")
+wait_for_response()
+ask("Thank you for the details!")
+```
+
+**Compiled Output:**
+```
+Wait for user response before continuing.
+```
+
+### File Operations
+
+#### create_file(filename, content)
+Create a file with specified content.
+
+**Parameters:**
+- `filename` (string): The name of the file to create
+- `content` (string | variable): The content to write to the file
+
+**Examples:**
+```spark
+create_file("README.md", "project_readme")
+create_file("config.json", config_template)
+create_file("output.txt", "Hello, world!")
+```
+
+**Compiled Output:**
+```
+Create file "README.md" with content: project_readme
+```
+
+### System Functions
+
+These are placeholders for functions that would be implemented by the runtime:
+
+#### Git Operations
+```spark
+git_init()
+git_commit("commit message")
+git_push()
+git_status()
+```
+
+#### GitHub Operations
+```spark
+github_create_repo()
+github_create_pr()
+github_create_issue("title", "body")
+```
+
+#### File System Operations
+```spark
+read_file("path/to/file")
+append_file("path/to/file", "content")
+delete_file("path/to/file")
+```
+
+## Operators
+
+### Arithmetic Operators
+
+#### Addition (+)
+Used for string concatenation:
+
+```spark
+result = "Hello " + "World"        // "Hello World"
+message = "Count: " + count        // "Count: 5"
+```
+
+### Comparison Operators
+
+#### Equality (==)
+```spark
+if (status == "complete") {
+  ask("Task is done!")
+}
+```
+
+#### Inequality (!=)
+```spark
+if (status != "pending") {
+  ask("Status has changed")
+}
+```
+
+### Logical Operators
+
+#### Logical NOT (!)
+```spark
+if (!is_complete) {
+  ask("Still working...")
+}
+```
+
+#### Logical AND (&&)
+```spark
+if (is_ready && has_permission) {
+  ask("Starting process...")
+}
+```
+
+#### Logical OR (||)
+```spark
+if (is_admin || is_owner) {
+  ask("Access granted")
+}
+```
+
+### Array Operations
+
+#### join(separator)
+Convert array to string with separator:
+
+```spark
+items = ["a", "b", "c"]
+result = items.join(", ")    // "a, b, c"
+```
+
+## Comments
+
+### Single-line Comments
+```spark
+// This is a comment
+ask("Hello")  // Comment at end of line
+```
+
+### Multi-line Comments
+Not currently supported. Use multiple single-line comments:
+
+```spark
+// This is a multi-line comment
+// that spans several lines
+// to document complex logic
+```
+
+## Compilation Output
+
+Understanding how Spark compiles to Claude Code markdown helps debug issues.
+
+### Variable Assignments
+```spark
+name = "John"
+```
+
+**Compiles to:**
+```
+Set name = John
+```
+
+### Control Flow
+```spark
+if (condition) {
+  ask("Hello")
+}
+```
+
+**Compiles to:**
+```
+If condition:
+- Ask the user: "Hello"
+```
+
+### Loops
+```spark
+for item in items {
+  ask(item)
+}
+```
+
+**Compiles to:**
+```
+For each item in items:
+- Ask the user the question from variable: item
+```
+
+### Functions
+```spark
+create_file("test.txt", "content")
+```
+
+**Compiles to:**
+```
+Create file "test.txt" with content: content
+```
+
+## Error Handling
+
+### Common Compilation Errors
+
+#### Syntax Errors
+```
+Error: Expected command declaration: command <name> {
+Error: Invalid ask statement: ask(unclosed string"
+Error: Invalid assignment: name =
+```
+
+#### Runtime Errors
+```
+Error: File not found: /path/to/file.spark
+Error: No input file specified
+Error: Input file must have .spark extension
+```
+
+### Debugging Tips
+
+1. **Check syntax**: Ensure all strings are quoted and braces are balanced
+2. **Verify file paths**: Use absolute paths for input files
+3. **Test compilation**: Use `bun run dev compile --dry-run` to check syntax
+4. **Read output**: Check the generated `.md` file for expected behavior
+
+## Best Practices
+
+### Variable Naming
+- Use descriptive names: `deployment_environment` not `env`
+- Use consistent casing: stick to `snake_case` or `camelCase`
+- Avoid reserved words: don't use `if`, `for`, `while` as variable names
+
+### Function Usage
+- Always quote string literals: `ask("Hello")` not `ask(Hello)`
+- Use variables for reusable content: store repeated strings in variables
+- Handle edge cases: check conditions before loops and file operations
+
+### Code Organization
+- Group related variables at the top
+- Use comments to explain complex logic
+- Keep functions focused on single responsibilities
+
+## Version Compatibility
+
+This API reference is for Spark v1.0. Future versions may include:
+
+### Planned Features
+- **v1.1**: Import system, standard library, string interpolation
+- **v2.0**: Multi-file projects, package management, IDE extensions
+
+### Deprecation Policy
+- Breaking changes will be announced in advance
+- Migration guides will be provided for major version updates
+- Backward compatibility maintained within major versions
+
+---
+
+**For more help:**
+- [Tutorial](Tutorial.md) - Step-by-step learning guide  
+- [Examples](Examples.md) - Real-world command examples
+- [FAQ](FAQ.md) - Common questions and troubleshooting

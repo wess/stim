@@ -1,0 +1,83 @@
+command recall {
+  subcommand = args[0]
+  
+  if (subcommand == "init") {
+    create_recall_structure()
+    create_file(".recall/context.md", "project_context_template")
+    add_to_gitignore(".recall/")
+    ask("Recall initialized. Use '/recall build [path]' to start planning.")
+  }
+  
+  if (subcommand == "load") {
+    path = args[1]
+    load_context_files(path)
+    ask("Loaded context for " + path + ": [list files loaded]")
+  }
+  
+  if (subcommand == "build") {
+    path = args[1] 
+    description = args[2]
+    
+    if (!description) {
+      questions = [
+        "What is the primary purpose of this component?",
+        "What technology stack should be used?",
+        "What are the key requirements?", 
+        "Any specific constraints or decisions already made?"
+      ]
+      
+      for question in questions {
+        ask(question)
+        wait_for_response()
+      }
+    }
+    
+    create_file(".recall/" + path + "/implementing.md", "task_breakdown")
+    create_file(".recall/" + path + "/decisions.md", "technology_choices")
+    
+    ask("Would you like me to scaffold the file structure for this plan?")
+  }
+  
+  if (subcommand == "scaffold") {
+    path = args[1]
+    
+    if (!file_exists(".recall/" + path + "/implementing.md")) {
+      ask("No build plan found for " + path + ". Would you like me to create a basic plan first, or run /recall build " + path + " for a detailed plan?")
+      wait_for_response()
+    }
+    
+    scaffold_options = ["--dry-run", "--minimal", "--with-tests"]
+    read_plans_and_generate_structure(path)
+  }
+  
+  if (subcommand == "add") {
+    state = args[1]
+    note = args[2]
+    current_dir = get_current_directory()
+    append_to_file(".recall/" + current_dir + "/" + state + ".md", note)
+  }
+  
+  if (subcommand == "show") {
+    display_loaded_contexts_with_token_counts()
+    show_available_recall_paths()
+  }
+  
+  if (subcommand == "status") {
+    show_all_recall_files_with_summaries()
+  }
+  
+  if (subcommand == "clear") {
+    state = args[1]
+    clear_state_files_across_project(state)
+  }
+  
+  if (subcommand == "unload") {
+    path = args[1]
+    remove_context_from_session(path)
+  }
+  
+  // Session state management
+  maintain_loaded_contexts()
+  watch_for_recall_file_changes()
+  warn_when_approaching_token_limits()
+}
