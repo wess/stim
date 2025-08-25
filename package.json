@@ -1,7 +1,7 @@
 {
   "name": "stim",
   "module": "src/main.ts",
-  "version": "1.0.0",
+  "version": "1.0.0b1",
   "type": "module",
   "scripts": {
     "dev": "bun run src/main.ts",
