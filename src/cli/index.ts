@@ -72,8 +72,6 @@ export const main = () => {
     case '-v':
     case '--version':
       console.log(`Stim v${getVersion()}`)
-      console.log('DSL for Claude Code commands')
-      console.log('https://github.com/user/stim')
       break
     case 'help':
     case '-h':

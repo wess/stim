@@ -65,27 +65,39 @@ command brainstorm {
 
 ## Installation
 
-### Pre-built Binary
+### Quick Install
 
-Download from [GitHub Releases](https://github.com/user/stim/releases):
+```bash
+curl -fsSL https://raw.githubusercontent.com/wess/stim/main/install.sh | sh
+```
+
+### Homebrew
+
+```bash
+brew install wess/packages/stim
+```
+
+### Manual Download
+
+Download from [GitHub Releases](https://github.com/wess/stim/releases):
 
 **macOS (Apple Silicon):**
 ```bash
-curl -L https://github.com/user/stim/releases/latest/download/stim-darwin-arm64 -o stim
+curl -L https://github.com/wess/stim/releases/latest/download/stim-darwin-arm64 -o stim
 chmod +x stim
 sudo mv stim /usr/local/bin/
 ```
 
 **macOS (Intel):**
 ```bash
-curl -L https://github.com/user/stim/releases/latest/download/stim-darwin-x64 -o stim
+curl -L https://github.com/wess/stim/releases/latest/download/stim-darwin-x64 -o stim
 chmod +x stim
 sudo mv stim /usr/local/bin/
 ```
 
 **Linux (x64):**
 ```bash
-curl -L https://github.com/user/stim/releases/latest/download/stim-linux-x64 -o stim
+curl -L https://github.com/wess/stim/releases/latest/download/stim-linux-x64 -o stim
 chmod +x stim
 sudo mv stim /usr/local/bin/
 ```
@@ -98,7 +110,7 @@ Download `stim-windows-x64.exe` from releases and add to your PATH.
 Requires [Bun](https://bun.sh).
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/wess/stim.git
 cd stim
 bun install
 bun run build
@@ -383,7 +395,7 @@ The `plugins/zed/` extension provides:
 See [Contributing](docs/Contributing.md) for development setup, code style, and PR guidelines.
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/wess/stim.git
 cd stim
 bun install
 bun test

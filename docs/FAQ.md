@@ -73,7 +73,7 @@ The [Tutorial](Tutorial.md) walks through everything step-by-step.
 
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone https://github.com/wess/stim.git
 cd stim
 
 # Install dependencies  

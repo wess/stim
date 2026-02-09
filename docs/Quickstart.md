@@ -4,23 +4,25 @@ Get up and running with Stim in 5 minutes.
 
 ## Prerequisites
 
-- [Bun](https://bun.sh) installed
 - [Claude Code](https://claude.ai/code) setup
 - Basic familiarity with command-line tools
 
 ## Step 1: Installation
 
+**Quick install:**
 ```bash
-# Clone and setup
-git clone <repository-url>
-cd stim
-bun install
-
-# Verify it works
-bun run dev --help
+curl -fsSL https://raw.githubusercontent.com/wess/stim/main/install.sh | sh
 ```
 
-You should see the Stim CLI help output.
+**Or via Homebrew:**
+```bash
+brew install wess/packages/stim
+```
+
+Verify it works:
+```bash
+stim version
+```
 
 ## Step 2: Your First Command
 
@@ -43,22 +45,17 @@ command hello {
 EOF
 ```
 
-## Step 3: Compile to Claude Command
+## Step 3: Install as a Claude Command
 
 ```bash
-# Build the project first
-bun run build
-
-# Compile the .stim file using the standalone executable
-./dist/stim compile hello.stim
-
-# This creates ~/.claude/commands/hello.md
+stim install hello.stim
 ```
 
-You should see:
-```
-✓ Compiled hello.stim → /Users/yourusername/.claude/commands/hello.md
-Command: /hello
+This compiles and places the output in `~/.claude/commands/hello.md`. Use `--local` to install to the current project instead.
+
+To compile without installing (outputs to `dist/`):
+```bash
+stim compile hello.stim
 ```
 
 ## Step 4: Use Your Command
@@ -104,8 +101,7 @@ command quickplan {
 
 Compile and use it:
 ```bash
-bun run build
-./dist/stim compile quickplan.stim
+stim install quickplan.stim
 # Use with: /quickplan
 ```
 

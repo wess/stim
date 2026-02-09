@@ -36,7 +36,7 @@ We are committed to providing a welcoming and inclusive environment. Please:
 
 ### Before You Start
 
-1. Check existing [issues](https://github.com/user/stim/issues) to avoid duplicates
+1. Check existing [issues](https://github.com/wess/stim/issues) to avoid duplicates
 2. For major changes, open an issue to discuss the approach first
 3. Make sure you understand the [project goals](#project-goals)
 
