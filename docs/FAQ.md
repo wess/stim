@@ -384,19 +384,60 @@ create_file("output.md", template_variable)
 
 ## Advanced Usage
 
-### Can I import other Stim files?
+### Can I reference other Stim files?
 
-Not in v1.0, but planned for v1.1:
+Yes! Use file reference tasks to include another `.stim` file at compile time:
 
 ```stim
-// Future syntax
-import "common/helpers.stim" as helpers
-import "std/git.stim" as git
+task("helpers/research.stim")
+task("helpers/research.stim", explore)
 ```
+
+The referenced file is parsed and its body is inlined into the compiled output. This means the final markdown is fully self-contained.
+
+### What are tasks and when should I use them?
+
+Tasks spawn Claude Code subagents for autonomous subtasks. Use them when you want to:
+
+- **Parallelize work**: Run multiple independent analyses simultaneously
+- **Specialize agents**: Use `explore` for codebase search, `bash` for shell commands, `plan` for architecture
+- **Modularize commands**: Break large workflows into reusable `.stim` files
+
+```stim
+task explore "find all TODO comments" {
+  ask("Search the codebase for TODO and FIXME comments")
+}
+```
+
+### How do I run tasks in parallel?
+
+Wrap multiple `task` statements in a `parallel` block:
+
+```stim
+parallel {
+  task explore "analyze frontend" { ... }
+  task explore "analyze backend" { ... }
+}
+```
+
+Only `task` statements are allowed inside `parallel`.
 
 ### How do I create reusable patterns?
 
-Currently, use consistent naming and copy successful patterns:
+Use file reference tasks to share logic across commands:
+
+```stim
+// helpers/security.stim
+command security {
+  ask("Scan for vulnerabilities")
+  wait_for_response()
+}
+
+// In your main command:
+task("helpers/security.stim", explore)
+```
+
+You can also use consistent naming and copy successful patterns:
 
 ```stim
 // Reusable confirmation pattern
@@ -405,10 +446,6 @@ if (confirm("Are you sure?")) {
     dangerous_action()
   }
 }
-
-// Reusable multi-choice pattern
-options = ["Option A", "Option B", "Option C"]
-ask("Choose an option: " + options.join(", "))
 ```
 
 ### Can I debug Stim commands?

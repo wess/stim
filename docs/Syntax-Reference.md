@@ -1,525 +1,412 @@
 # Stim Syntax Reference
 
-Complete reference for Stim language syntax and grammar.
+Everything you can write in a `.stim` file, with examples.
 
 ## Table of Contents
 
-1. [Lexical Elements](#lexical-elements)
-2. [Command Structure](#command-structure)
-3. [Variables](#variables)
-4. [Data Types](#data-types)
-5. [Operators](#operators)
-6. [Control Flow](#control-flow)
-7. [Function Calls](#function-calls)
-8. [Comments](#comments)
-9. [Grammar Reference](#grammar-reference)
+1. [Commands](#commands)
+2. [Variables](#variables)
+3. [Data Types](#data-types)
+4. [Operators](#operators)
+5. [Control Flow](#control-flow)
+6. [Tasks](#tasks)
+7. [Parallel](#parallel)
+8. [Functions](#functions)
+9. [Comments](#comments)
+10. [Naming Rules](#naming-rules)
+11. [Keywords](#keywords)
+12. [Common Errors](#common-errors)
 
-## Lexical Elements
+## Commands
 
-### Identifiers
-
-Identifiers are used for command names, variable names, and function names.
-
-**Rules:**
-- Must start with a letter (a-z, A-Z) or underscore (_)
-- Can contain letters, numbers (0-9), and underscores
-- Case-sensitive
-
-**Valid identifiers:**
-```stim
-command_name
-myVariable
-deploy_to_production
-_private
-user123
-camelCaseVariable
-snake_case_variable
-```
-
-**Invalid identifiers:**
-```stim
-123invalid    // Cannot start with number
-my-variable   // Hyphen not allowed
-my variable   // Space not allowed
-if            // Reserved keyword
-```
-
-### Keywords
-
-Reserved words that cannot be used as identifiers:
-
-```
-command    if         else       for        in         while
-ask        confirm    create_file wait_for_response    break
-true       false      function   return
-```
-
-### Literals
-
-#### String Literals
-Strings are enclosed in double or single quotes:
+Every `.stim` file contains one command. The name becomes the slash command in Claude Code.
 
 ```stim
-"double quoted string"
-'single quoted string'
-"string with \"escaped\" quotes"
-'string with \'escaped\' quotes'
-""                              // empty string
-```
-
-**Escape sequences:**
-- `\"` - Double quote
-- `\'` - Single quote  
-- `\\` - Backslash
-- `\n` - Newline (preserved as literal \n)
-- `\t` - Tab (preserved as literal \t)
-
-#### Boolean Literals
-```stim
-true
-false
-```
-
-#### Array Literals
-Arrays are enclosed in square brackets with comma-separated elements:
-
-```stim
-[]                              // empty array
-["item1"]                       // single element
-["item1", "item2", "item3"]     // multiple elements
-["mixed", "123", "true"]        // all elements treated as strings
-```
-
-### Operators
-
-#### Arithmetic Operators
-```stim
-+     // Addition/concatenation
-```
-
-#### Comparison Operators
-```stim
-==    // Equality
-!=    // Inequality
-```
-
-#### Logical Operators
-```stim
-!     // Logical NOT
-&&    // Logical AND
-||    // Logical OR
-```
-
-### Punctuation
-```stim
-{     // Open brace
-}     // Close brace
-[     // Open bracket
-]     // Close bracket
-(     // Open parenthesis
-)     // Close parenthesis
-,     // Comma
-=     // Assignment
-```
-
-## Command Structure
-
-### Command Declaration
-```stim
-command identifier {
-    statement_list
+command deploy {
+  ask("What should I deploy?")
+  wait_for_response()
 }
 ```
 
-**Example:**
-```stim
-command hello_world {
-    ask("Hello, world!")
-}
-```
-
-### Statement List
-A command body contains zero or more statements:
-
-```stim
-command example {
-    // Empty command body - valid
-}
-
-command multiple_statements {
-    statement1
-    statement2
-    statement3
-}
-```
+This compiles to `deploy.md` and is used as `/deploy`.
 
 ## Variables
 
-### Variable Declaration and Assignment
+Assign with `=`. Use anywhere you need the value later.
+
 ```stim
-identifier = expression
+name = "production"
+port = "8080"
+ready = true
+services = ["api", "web", "worker"]
 ```
 
-**Examples:**
-```stim
-name = "John"
-count = "42"
-is_ready = true
-items = ["a", "b", "c"]
-```
-
-### Variable Reference
-Variables are referenced by their identifier:
+Reference by name:
 
 ```stim
 ask(name)
-ask("Hello " + name)
-if (is_ready) { }
-for item in items { }
+ask("Deploying to " + name)
+if (ready) { ... }
+for service in services { ... }
+```
+
+Variables are scoped to the entire command. Assigning inside an `if` or `for` block is visible everywhere.
+
+```stim
+command example {
+  result = "pending"
+
+  if (confirm("Done?")) {
+    result = "complete"
+  }
+
+  ask(result)  // "complete" if confirmed
+}
 ```
 
 ## Data Types
 
-### String
-Text enclosed in quotes:
+### Strings
+
+Double or single quotes. Both work the same.
 
 ```stim
-message = "Hello, world!"
+greeting = "Hello, world!"
+greeting = 'Hello, world!'
 empty = ""
-multiword = "This is a sentence"
 ```
 
-### Boolean
-True or false values:
+Escape sequences: `\"`, `\'`, `\\`, `\n`, `\t`
+
+### Booleans
 
 ```stim
-flag = true
+enabled = true
 disabled = false
 ```
 
-### Array
-Ordered list of elements:
+### Arrays
+
+Square brackets, comma-separated. All elements are strings.
 
 ```stim
-empty_array = []
-strings = ["one", "two", "three"]
-mixed = ["text", "123", "true"]  // All treated as strings
+items = ["one", "two", "three"]
+empty = []
 ```
-
-**Note:** All array elements are currently treated as strings regardless of their literal appearance.
 
 ## Operators
 
-### String Concatenation (+)
-Joins two strings together:
+### Concatenation (`+`)
+
+Joins strings together:
 
 ```stim
-full_name = first_name + " " + last_name
-message = "Count: " + count
-greeting = "Hello, " + name + "!"
+full = first_name + " " + last_name
+ask("Hello, " + name + "!")
 ```
 
-### Comparison Operators
-
-#### Equality (==)
-Tests if two values are equal:
+### Comparison (`==`, `!=`)
 
 ```stim
-if (status == "complete") {
-    ask("Task finished!")
+if (status == "done") {
+  ask("Finished!")
+}
+
+if (env != "production") {
+  ask("Safe to experiment")
 }
 ```
 
-#### Inequality (!=)
-Tests if two values are not equal:
+### Logical (`!`, `&&`, `||`)
 
 ```stim
-if (status != "pending") {
-    ask("Status changed")
+if (!ready) {
+  ask("Not ready yet")
 }
-```
 
-### Logical Operators
-
-#### Logical NOT (!)
-Negates a boolean value:
-
-```stim
-if (!is_complete) {
-    ask("Still working...")
+if (ready && approved) {
+  ask("Deploying")
 }
-```
 
-#### Logical AND (&&)
-True if both operands are true:
-
-```stim
-if (is_ready && has_permission) {
-    ask("Proceeding...")
-}
-```
-
-#### Logical OR (||)
-True if either operand is true:
-
-```stim
 if (is_admin || is_owner) {
-    ask("Access granted")
+  ask("Access granted")
 }
 ```
 
-### Operator Precedence
-From highest to lowest precedence:
+### Precedence
 
-1. `!` (logical NOT)
-2. `==`, `!=` (comparison)
-3. `&&` (logical AND)
-4. `||` (logical OR)
-5. `+` (concatenation)
+Highest to lowest: `!`, then `==`/`!=`, then `&&`, then `||`, then `+`.
 
-Use parentheses to override precedence:
+Use parentheses when needed:
 
 ```stim
-result = (a + b) == (c + d)
-condition = !(is_ready && has_data)
+if (!(ready && approved)) {
+  ask("Blocked")
+}
 ```
 
 ## Control Flow
 
-### If Statement
+### if / else
+
 ```stim
-if (condition) {
-    statement_list
+if (confirm("Use TypeScript?")) {
+  ask("Setting up TypeScript config")
 }
 ```
 
-### If-Else Statement
 ```stim
-if (condition) {
-    statement_list
+if (env == "production") {
+  ask("Running production deploy")
 } else {
-    statement_list
+  ask("Running staging deploy")
 }
 ```
 
-### For Loop
+### for
+
+Iterate over an array:
+
 ```stim
-for identifier in expression {
-    statement_list
+checks = ["tests", "lint", "types"]
+
+for check in checks {
+  ask("Running " + check)
+  wait_for_response()
 }
 ```
 
-The identifier takes on each value from the array expression.
+### while
 
-### While Loop
+Repeat until a condition changes:
+
 ```stim
-while (condition) {
-    statement_list
+done = false
+
+while (!done) {
+  ask("Describe the next requirement")
+  wait_for_response()
+
+  if (confirm("All requirements captured?")) {
+    done = true
+  }
 }
 ```
 
-### Break Statement
+### break
+
+Exit a loop early:
+
 ```stim
-break
+for item in items {
+  if (item == "stop") {
+    break
+  }
+  ask(item)
+}
 ```
 
-Exits the innermost loop.
+## Tasks
 
-## Function Calls
+Tasks spawn Claude Code subagents. The body describes what the agent should do.
 
-### Function Call Syntax
+### Inline task
+
 ```stim
-function_name(argument_list)
+task "explore the auth module" {
+  ask("What authentication patterns exist?")
+  wait_for_response()
+}
 ```
 
-### Built-in Functions
+### With an agent type
 
-#### ask(question)
+Pick the right agent for the job: `explore`, `bash`, `plan`, or `general` (default).
+
 ```stim
-ask(string_expression)
+task explore "find all API endpoints" {
+  ask("Search the codebase and list every route handler")
+}
+
+task bash "run the test suite" {
+  ask("Execute all tests and report failures")
+}
+
+task plan "design the caching layer" {
+  ask("Propose a caching architecture for this app")
+}
 ```
 
-#### confirm(message)  
+| Type | Best for |
+|------|----------|
+| `general` | General-purpose work (default) |
+| `explore` | Searching files, reading code, answering codebase questions |
+| `bash` | Running commands, git, builds, installs |
+| `plan` | Designing implementation plans, architecture decisions |
+
+### File reference
+
+Point to another `.stim` file. It gets parsed and inlined at compile time.
+
 ```stim
-confirm(string_expression)
+task("helpers/security.stim")
+task("helpers/security.stim", explore)
 ```
 
-#### wait_for_response()
+The path is relative to the current file. The output is fully self-contained -- no runtime dependency on the referenced file.
+
+Circular references are detected at compile time and produce an error.
+
+## Parallel
+
+Run multiple tasks at the same time. Only `task` statements are allowed inside.
+
 ```stim
-wait_for_response()
+parallel {
+  task explore "check frontend" {
+    ask("What frontend patterns are used?")
+  }
+  task explore "check backend" {
+    ask("What backend patterns are used?")
+  }
+  task bash "run tests" {
+    ask("Execute the test suite")
+  }
+}
 ```
 
-#### create_file(filename, content)
+This tells Claude Code to spawn all three subagents concurrently.
+
+You can mix agent types and use file references inside parallel blocks:
+
 ```stim
-create_file(string_expression, string_expression)
+parallel {
+  task("helpers/lint.stim", bash)
+  task("helpers/typecheck.stim", bash)
+  task explore "check for TODOs" {
+    ask("Find all TODO and FIXME comments")
+  }
+}
 ```
 
-### Custom Functions
-Custom functions are treated as simple function calls:
+## Functions
+
+### Built-in
+
+```stim
+ask("What should I work on?")             // Prompt the user
+wait_for_response()                        // Pause for user input
+confirm("Deploy to production?")           // Yes/no confirmation
+create_file("README.md", content)          // Create a file
+```
+
+`ask()` accepts a string literal or a variable:
+
+```stim
+ask("What's your name?")    // string literal
+ask(my_question)             // variable reference
+ask("Hello, " + name)       // concatenation
+```
+
+### Custom functions
+
+Any other function call is passed through as-is:
 
 ```stim
 git_init()
-git_commit("message")
-deploy_to_environment(env_name)
+git_commit("initial commit")
+deploy(env_name)
+run_tests("unit", "integration")
 ```
 
 ## Comments
 
-### Single-line Comments
-Comments start with `//` and continue to the end of the line:
+Single-line only. Start with `//`.
 
 ```stim
-// This is a comment
-ask("Hello") // Comment after statement
+// Setup phase
+name = "test"
+
+ask("Hello")  // inline comment
+
+// Multiple comment lines
+// work fine back to back
 ```
 
-### Comment Placement
-Comments can appear:
-- On their own line
-- At the end of a statement line
-- Multiple consecutive comment lines
+## Naming Rules
+
+Names for commands, variables, and functions must:
+
+- Start with a letter or underscore
+- Contain only letters, numbers, and underscores
+- Not be a reserved keyword
 
 ```stim
-// File header comment
-command example {
-    // Variable declarations
-    name = "test"
-    
-    ask("Hello") // Inline comment
-    
-    // Multi-line comment block
-    // explaining complex logic
-    // across several lines
-}
+// Valid
+project_name
+myVar
+_private
+user123
+
+// Invalid
+123abc       // starts with number
+my-var       // hyphen not allowed
+my var       // spaces not allowed
 ```
 
-## Grammar Reference
+## Keywords
 
-### Complete Grammar (EBNF)
-
-```ebnf
-stim_file = command_declaration
-
-command_declaration = "command" IDENTIFIER "{" statement_list "}"
-
-statement_list = { statement }
-
-statement = variable_assignment
-          | if_statement  
-          | while_statement
-          | for_statement
-          | break_statement
-          | function_call
-
-variable_assignment = IDENTIFIER "=" expression
-
-if_statement = "if" "(" expression ")" "{" statement_list "}"
-             | "if" "(" expression ")" "{" statement_list "}" "else" "{" statement_list "}"
-
-while_statement = "while" "(" expression ")" "{" statement_list "}"
-
-for_statement = "for" IDENTIFIER "in" expression "{" statement_list "}"
-
-break_statement = "break"
-
-function_call = IDENTIFIER "(" argument_list ")"
-
-argument_list = [ expression { "," expression } ]
-
-expression = logical_or_expression
-
-logical_or_expression = logical_and_expression { "||" logical_and_expression }
-
-logical_and_expression = equality_expression { "&&" equality_expression }
-
-equality_expression = additive_expression [ ( "==" | "!=" ) additive_expression ]
-
-additive_expression = unary_expression { "+" unary_expression }
-
-unary_expression = [ "!" ] primary_expression
-
-primary_expression = IDENTIFIER
-                   | STRING_LITERAL
-                   | BOOLEAN_LITERAL
-                   | array_literal
-                   | "(" expression ")"
-
-array_literal = "[" [ expression { "," expression } ] "]"
-
-IDENTIFIER = LETTER { LETTER | DIGIT | "_" }
-
-STRING_LITERAL = '"' { STRING_CHARACTER | ESCAPE_SEQUENCE } '"'
-               | "'" { STRING_CHARACTER | ESCAPE_SEQUENCE } "'"
-
-BOOLEAN_LITERAL = "true" | "false"
-
-LETTER = "a"..."z" | "A"..."Z" | "_"
-DIGIT = "0"..."9"
-STRING_CHARACTER = any character except '"', "'", or "\"
-ESCAPE_SEQUENCE = "\"" | "\'" | "\\"
-```
-
-### Statement Types
-
-| Statement Type | Syntax | Example |
-|---|---|---|
-| Variable Assignment | `var = expr` | `name = "John"` |
-| If Statement | `if (cond) { ... }` | `if (ready) { ask("Go!") }` |
-| If-Else Statement | `if (cond) { ... } else { ... }` | `if (x) { a() } else { b() }` |
-| While Loop | `while (cond) { ... }` | `while (!done) { work() }` |
-| For Loop | `for var in arr { ... }` | `for item in items { ask(item) }` |
-| Break | `break` | `break` |
-| Function Call | `func(args)` | `ask("Hello")` |
-
-### Expression Types
-
-| Expression Type | Syntax | Example |
-|---|---|---|
-| String Literal | `"text"` or `'text'` | `"Hello, world!"` |
-| Boolean Literal | `true` or `false` | `true` |
-| Array Literal | `[item, item, ...]` | `["a", "b", "c"]` |
-| Variable Reference | `identifier` | `user_name` |
-| Concatenation | `expr + expr` | `"Hello " + name` |
-| Equality | `expr == expr` | `status == "done"` |
-| Inequality | `expr != expr` | `count != "0"` |
-| Logical NOT | `!expr` | `!is_ready` |
-| Logical AND | `expr && expr` | `ready && loaded` |
-| Logical OR | `expr \|\| expr` | `admin \|\| owner` |
-| Parenthesized | `(expr)` | `(a + b) == c` |
-
-## Error Messages
-
-### Syntax Errors
-
-Common syntax errors and their meanings:
+These are reserved and cannot be used as variable or command names:
 
 ```
-Expected command declaration: command <name> {
-→ File must start with command declaration
-
-Invalid assignment: name =  
-→ Assignment missing value after =
-
-Invalid ask statement: ask(unclosed string"
-→ String literal not properly closed
-
-Invalid function call: func(
-→ Function call missing closing parenthesis
+command   if        else      for       in        while
+break     true      false     task      parallel
+bash      explore   plan      general
 ```
 
-### Semantic Errors
+Built-in function names (`ask`, `confirm`, `create_file`, `wait_for_response`) are also reserved.
 
-```
-Unknown function: unknown_func
-→ Function not recognized (may be valid but not built-in)
+## Common Errors
 
-Variable not declared: undeclared_var
-→ Using variable before assignment (not currently enforced)
+**Missing command declaration:**
 ```
+Error: Expected command declaration: command <name> {
+```
+Every file must start with `command name {`.
+
+**Unclosed string:**
+```
+Error: Invalid ask statement: ask(unclosed string"
+```
+Make sure quotes match: `ask("text")` not `ask("text)`.
+
+**Missing value in assignment:**
+```
+Error: Invalid assignment: name =
+```
+The right side of `=` can't be empty: `name = "value"`.
+
+**Non-task inside parallel:**
+```
+Error: parallel block may only contain task statements
+```
+Only `task` statements go inside `parallel { }`.
+
+**Circular file reference:**
+```
+Error: Circular task file reference detected: b.stim
+```
+Two `.stim` files can't reference each other (directly or indirectly).
+
+**Missing task file:**
+```
+Error: Task file not found: /path/to/missing.stim
+```
+Check that the path in `task("path.stim")` is correct relative to the current file.
 
 ---
 
 **See also:**
-- [API Reference](API.md) - Function documentation
-- [Tutorial](Tutorial.md) - Learning guide with examples
-- [Examples](Examples.md) - Real-world usage patterns
+- [API Reference](API.md) -- detailed documentation for every statement and function
+- [Tutorial](Tutorial.md) -- learn by building commands step by step
+- [Examples](Examples.md) -- real-world patterns to copy and adapt

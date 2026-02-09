@@ -5,10 +5,11 @@ Real-world examples demonstrating Stim's capabilities for building sophisticated
 ## Table of Contents
 
 1. [Simple Examples](#simple-examples)
-2. [Workflow Commands](#workflow-commands) 
+2. [Workflow Commands](#workflow-commands)
 3. [Development Tools](#development-tools)
 4. [Interactive Utilities](#interactive-utilities)
 5. [Template Generators](#template-generators)
+6. [Task and Parallel Examples](#task-and-parallel-examples)
 
 ## Simple Examples
 
@@ -519,6 +520,147 @@ command test_strategy {
   create_file(".github/workflows/test.yml", "github_actions_template")
   
   ask("Testing strategy implemented! Check generated config files.")
+}
+```
+
+## Task and Parallel Examples
+
+### Codebase Research
+
+Spawn subagents to research different aspects of a codebase:
+
+```stim
+command research {
+  ask("What area of the codebase should I research?")
+  wait_for_response()
+
+  parallel {
+    task explore "find relevant source files" {
+      ask("Search for files related to the user's area of interest")
+      wait_for_response()
+    }
+    task explore "check for existing tests" {
+      ask("Find all test files related to this area")
+      wait_for_response()
+    }
+    task explore "look for documentation" {
+      ask("Search for docs, READMEs, and comments about this area")
+      wait_for_response()
+    }
+  }
+
+  ask("Combine all findings into a comprehensive summary")
+}
+```
+
+### Multi-Agent Code Review
+
+Run security, performance, and style checks simultaneously:
+
+```stim
+command deep_review {
+  ask("What files or directories should I review?")
+  wait_for_response()
+
+  parallel {
+    task explore "security audit" {
+      ask("Scan for security vulnerabilities: SQL injection, XSS, auth flaws, exposed secrets")
+      wait_for_response()
+    }
+    task explore "performance analysis" {
+      ask("Identify performance bottlenecks: N+1 queries, unnecessary allocations, blocking I/O")
+      wait_for_response()
+    }
+    task explore "architecture review" {
+      ask("Evaluate code architecture: separation of concerns, dependency management, patterns")
+      wait_for_response()
+    }
+  }
+
+  ask("Compile all review findings into a single CODE_REVIEW.md report")
+  create_file("CODE_REVIEW.md", "review_report")
+}
+```
+
+### Build and Test Pipeline
+
+Use bash agents to run commands:
+
+```stim
+command ci {
+  task bash "run linter" {
+    ask("Run the project linter and report any issues")
+    wait_for_response()
+  }
+
+  task bash "run tests" {
+    ask("Run the full test suite and report results")
+    wait_for_response()
+  }
+
+  if (confirm("Tests passed. Deploy to staging?")) {
+    task bash "deploy to staging" {
+      ask("Deploy the current branch to the staging environment")
+    }
+  }
+}
+```
+
+### Modular Commands with File References
+
+Break a large workflow into reusable pieces:
+
+```stim
+// helpers/lint.stim
+command lint {
+  ask("Run linter on all source files")
+  wait_for_response()
+  ask("Fix any auto-fixable issues")
+}
+```
+
+```stim
+// helpers/typecheck.stim
+command typecheck {
+  ask("Run the TypeScript compiler in check mode")
+  wait_for_response()
+  ask("Report any type errors found")
+}
+```
+
+```stim
+// precommit.stim
+command precommit {
+  parallel {
+    task("helpers/lint.stim", bash)
+    task("helpers/typecheck.stim", bash)
+  }
+
+  ask("All checks passed!")
+  if (confirm("Ready to commit?")) {
+    ask("Stage and commit the changes")
+  }
+}
+```
+
+### Planning Agent
+
+Use the plan agent for architectural decisions:
+
+```stim
+command architect {
+  ask("What feature or system should I design?")
+  wait_for_response()
+
+  task plan "create implementation plan" {
+    ask("Analyze the codebase and design a detailed implementation plan")
+    wait_for_response()
+    ask("Identify critical files, dependencies, and potential risks")
+    wait_for_response()
+    ask("Propose a step-by-step implementation strategy")
+  }
+
+  ask("Review the plan above. Want me to proceed with implementation?")
 }
 ```
 

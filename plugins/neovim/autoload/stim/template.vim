@@ -1,5 +1,5 @@
-" Spark template functions
-" Functions for creating new Spark commands and snippets
+" Stim template functions
+" Functions for creating new Stim commands and snippets
 
 " Create a new command template
 function! stim#template#new_command(...)
@@ -36,7 +36,7 @@ function! stim#template#new_command(...)
   " Position cursor at first edit point
   call search('What would you like to do?', 'w')
   
-  echo 'New Spark command "' . command_name . '" created!'
+  echo 'New Stim command "' . command_name . '" created!'
 endfunction
 
 " Generate basic command template
@@ -89,6 +89,34 @@ function! stim#template#git_workflow()
         \ . '}'
 endfunction
 
+" Generate task template
+function! stim#template#task()
+  return 'task "description" {' . "\n"
+        \ . '  ask("What should this task do?")' . "\n"
+        \ . '  wait_for_response()' . "\n"
+        \ . '}'
+endfunction
+
+" Generate task with agent type template
+function! stim#template#task_with_agent()
+  return 'task explore "description" {' . "\n"
+        \ . '  ask("What should this task do?")' . "\n"
+        \ . '  wait_for_response()' . "\n"
+        \ . '}'
+endfunction
+
+" Generate parallel template
+function! stim#template#parallel()
+  return 'parallel {' . "\n"
+        \ . '  task "first task" {' . "\n"
+        \ . '    ask("What should task 1 do?")' . "\n"
+        \ . '  }' . "\n"
+        \ . '  task "second task" {' . "\n"
+        \ . '    ask("What should task 2 do?")' . "\n"
+        \ . '  }' . "\n"
+        \ . '}'
+endfunction
+
 " Insert template at cursor position
 function! stim#template#insert_at_cursor(template_func)
   let template = call(a:template_func, [])
@@ -107,4 +135,16 @@ endfunction
 
 function! stim#template#insert_git()
   call stim#template#insert_at_cursor('stim#template#git_workflow')
+endfunction
+
+function! stim#template#insert_task()
+  call stim#template#insert_at_cursor('stim#template#task')
+endfunction
+
+function! stim#template#insert_task_agent()
+  call stim#template#insert_at_cursor('stim#template#task_with_agent')
+endfunction
+
+function! stim#template#insert_parallel()
+  call stim#template#insert_at_cursor('stim#template#parallel')
 endfunction

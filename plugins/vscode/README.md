@@ -1,148 +1,109 @@
-# Spark Language Support for VS Code
+# Stim Language Support for VS Code
 
-Official VS Code extension for the Spark DSL - syntax highlighting, snippets, and compilation support for `.spark` files.
+VS Code extension for the Stim DSL -- syntax highlighting, snippets, and compilation support for `.stim` files.
 
 ## Features
 
-- **Syntax Highlighting** - Full syntax highlighting for Spark language constructs
-- **Code Snippets** - Pre-built snippets for common Spark patterns
-- **Compilation Support** - Compile `.spark` files directly from VS Code
-- **Error Detection** - Basic syntax error detection and highlighting
-- **Command Templates** - Quick creation of new Spark commands
+- **Syntax Highlighting** -- keywords, functions, strings, operators, agent types
+- **Code Snippets** -- pre-built snippets for commands, tasks, parallel blocks, loops, and more
+- **Compilation Support** -- compile `.stim` files directly from VS Code
+- **Error Detection** -- real-time syntax error highlighting
+- **Command Templates** -- quickly create new Stim commands
 
 ## Installation
 
-### From VSIX (Recommended)
-1. Download the latest `.vsix` file from the releases
+### From VSIX
+1. Download the latest `.vsix` file from releases
 2. Open VS Code
 3. Go to Extensions (Ctrl+Shift+X)
-4. Click "..." menu → "Install from VSIX..."
-5. Select the downloaded `.vsix` file
+4. Click "..." menu -> "Install from VSIX..."
+5. Select the downloaded file
 
 ### From Source
-```bash
-# Clone and build
-git clone <repository-url>
-cd spark/plugins/vscode
-npm install
-npm run compile
-
-# Package extension
-npm install -g vsce
-vsce package
-
-# Install the generated .vsix file
-```
-
-## Usage
-
-### Syntax Highlighting
-
-The extension automatically provides syntax highlighting for `.spark` files with support for:
-
-- **Keywords**: `command`, `if`, `else`, `for`, `while`, `in`, `break`
-- **Built-in Functions**: `ask()`, `confirm()`, `wait_for_response()`, `create_file()`
-- **String Literals**: Both `"double"` and `'single'` quoted strings
-- **Comments**: `// Line comments`
-- **Operators**: `+`, `==`, `!=`, `&&`, `||`, `!`
-- **Arrays**: `[item1, item2, item3]`
-
-### Code Snippets
-
-Type these prefixes and press Tab to expand:
-
-| Prefix | Description |
-|--------|-------------|
-| `command` | Create a new Spark command |
-| `ask` | Ask question and wait for response |
-| `confirm` | Ask for user confirmation |
-| `for` | Create a for loop |
-| `while` | Create a while loop |
-| `if` | Create an if statement |
-| `ifelse` | Create an if-else statement |
-| `var` | Create a variable assignment |
-| `array` | Create an array assignment |
-| `createfile` | Create a file |
-| `survey` | Create an interactive survey |
-| `features` | Create a feature selection workflow |
-| `git` | Create a git workflow |
-
-### Commands
-
-Access these commands via Command Palette (Ctrl+Shift+P):
-
-- **Spark: Compile Spark File** (`Ctrl+Shift+B`) - Compile the current `.spark` file
-- **Spark: Compile and Test in Claude Code** - Compile and show command to run
-- **Spark: New Spark Command** - Create a new command template
-
-### Context Menu
-
-Right-click on any `.spark` file in the editor or explorer:
-- **Compile Spark File** - Compile the selected file
-- **Compile and Test in Claude Code** - Compile and get run instructions
-
-### Error Detection
-
-The extension provides basic syntax error detection:
-- Unclosed string literals
-- Invalid assignment syntax  
-- Unmatched braces
-- Real-time error highlighting as you type
-
-## Requirements
-
-- **VS Code** 1.80.0 or later
-- **Bun** installed on your system
-- **Spark project** with `bun run dev compile` command available
-
-## Extension Settings
-
-Currently no configurable settings. The extension works out-of-the-box.
-
-## Known Issues
-
-- Advanced semantic analysis not yet implemented
-- Error detection is basic and may miss some edge cases
-- Auto-completion for variables not yet supported
-
-## Development
-
-### Setup
 ```bash
 cd plugins/vscode
 npm install
 npm run compile
+npm install -g vsce
+vsce package
+# Install the generated .vsix file
 ```
 
-### Testing
+## Syntax Highlighting
+
+Automatic highlighting for all `.stim` constructs:
+
+- **Keywords**: `command`, `if`, `else`, `for`, `while`, `in`, `break`, `task`, `parallel`
+- **Agent Types**: `bash`, `explore`, `plan`, `general`
+- **Built-in Functions**: `ask()`, `confirm()`, `wait_for_response()`, `create_file()`
+- **Strings**: `"double"` and `'single'` quoted
+- **Comments**: `// line comments`
+- **Operators**: `+`, `==`, `!=`, `&&`, `||`, `!`
+- **Arrays**: `["a", "b", "c"]`
+
+## Code Snippets
+
+Type a prefix and press Tab:
+
+| Prefix | Description |
+|--------|-------------|
+| `command` | New command |
+| `ask` | Ask question and wait |
+| `confirm` | Confirmation block |
+| `for` | For loop |
+| `while` | While loop |
+| `if` | If statement |
+| `ifelse` | If-else statement |
+| `var` | Variable assignment |
+| `array` | Array assignment |
+| `createfile` | Create a file |
+| `task` | Inline task |
+| `taskagent` | Task with agent type picker |
+| `taskfile` | File reference task |
+| `parallel` | Parallel block with two tasks |
+| `survey` | Interactive survey pattern |
+| `features` | Feature selection pattern |
+| `git` | Git workflow pattern |
+
+## Commands
+
+Access via Command Palette (Ctrl+Shift+P):
+
+- **Stim: Compile Stim File** (Ctrl+Shift+B) -- compile the current `.stim` file
+- **Stim: Compile and Test in Claude Code** -- compile and copy the slash command
+- **Stim: New Stim Command** -- create a new command from a template
+
+## Context Menu
+
+Right-click any `.stim` file in the editor or explorer:
+
+- **Compile Stim File**
+- **Compile and Test in Claude Code**
+
+## Error Detection
+
+Real-time detection of:
+- Unclosed string literals
+- Invalid assignment syntax
+- Unmatched braces
+
+## Requirements
+
+- VS Code 1.80.0+
+- [Bun](https://bun.sh) installed
+- Stim project with `bun run build` available
+
+## Development
+
 ```bash
+cd plugins/vscode
+npm install
+npm run compile
+
 # Launch extension development host
 code --extensionDevelopmentPath=.
 ```
 
-### Package
-```bash
-vsce package
-```
-
-## Release Notes
-
-### 1.0.0
-- Initial release
-- Syntax highlighting for all Spark language constructs
-- Code snippets for common patterns
-- Compilation support with error handling
-- Basic syntax error detection
-- Command templates and context menu integration
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch
-3. Make changes in `plugins/vscode/`
-4. Test with extension development host
-5. Submit a pull request
-
 ## License
 
-MIT - see LICENSE file for details
+MIT

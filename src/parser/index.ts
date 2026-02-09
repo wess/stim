@@ -53,6 +53,22 @@ const parseBody = (lines: string[]): Statement[] => {
       statements.push(statement)
       i = endIndex
       continue
+    } else if ((line.startsWith('task ') || line.startsWith('task(')) && !line.includes(' = ')) {
+      if (line.startsWith('task(')) {
+        statements.push(parseTaskFile(line))
+      } else if (line.endsWith('{')) {
+        const { statement, endIndex } = parseTask(lines, i)
+        statements.push(statement)
+        i = endIndex
+        continue
+      } else {
+        throw new Error(`Invalid task statement: ${line}`)
+      }
+    } else if (line === 'parallel {') {
+      const { statement, endIndex } = parseParallel(lines, i)
+      statements.push(statement)
+      i = endIndex
+      continue
     } else if (line === 'break') {
       statements.push({ type: 'break' })
     } else if (line === 'wait_for_response()') {
@@ -179,6 +195,48 @@ const parseFor = (lines: string[], startIndex: number) => {
   
   return {
     statement: { type: 'for', variable, iterable, body },
+    endIndex
+  }
+}
+
+const parseTask = (lines: string[], startIndex: number) => {
+  const line = lines[startIndex]
+  const match = line.match(/^task\s+(?:(bash|explore|plan|general)\s+)?["'](.+?)["']\s*\{$/)
+  if (!match) throw new Error(`Invalid task statement: ${line}`)
+
+  const agent = (match[1] || 'general') as import('../types/index.js').AgentType
+  const description = match[2]
+  const { body, endIndex } = parseBlock(lines, startIndex + 1)
+
+  return {
+    statement: { type: 'task' as const, description, agent, body },
+    endIndex
+  }
+}
+
+const parseTaskFile = (line: string): Statement => {
+  const match = line.match(/^task\(["'](.+?)["'](?:,\s*(bash|explore|plan|general))?\)$/)
+  if (!match) throw new Error(`Invalid task file reference: ${line}`)
+
+  return {
+    type: 'task',
+    description: '',
+    agent: (match[2] || 'general') as import('../types/index.js').AgentType,
+    body: [],
+    file: match[1]
+  }
+}
+
+const parseParallel = (lines: string[], startIndex: number) => {
+  const { body, endIndex } = parseBlock(lines, startIndex + 1)
+
+  const nonTaskStatements = body.filter(s => s.type !== 'task')
+  if (nonTaskStatements.length > 0) {
+    throw new Error('parallel block may only contain task statements')
+  }
+
+  return {
+    statement: { type: 'parallel' as const, tasks: body },
     endIndex
   }
 }

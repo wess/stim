@@ -124,5 +124,44 @@
       "}"
     ],
     "description": "Create a git workflow"
+  },
+  "Task": {
+    "prefix": "task",
+    "body": [
+      "task \"${1:description}\" {",
+      "\t${2:ask(\"What should this task do?\")}",
+      "}"
+    ],
+    "description": "Spawn a subagent task"
+  },
+  "Task with Agent": {
+    "prefix": "taskagent",
+    "body": [
+      "task ${1|general,explore,bash,plan|} \"${2:description}\" {",
+      "\t${3:ask(\"What should this task do?\")}",
+      "}"
+    ],
+    "description": "Spawn a subagent task with explicit agent type"
+  },
+  "Task File Reference": {
+    "prefix": "taskfile",
+    "body": [
+      "task(\"${1:path/to/file.stim}\"${2:, ${3|general,explore,bash,plan|}})"
+    ],
+    "description": "Reference another .stim file as a task"
+  },
+  "Parallel Block": {
+    "prefix": "parallel",
+    "body": [
+      "parallel {",
+      "\ttask \"${1:first task}\" {",
+      "\t\t${2:ask(\"What should task 1 do?\")}",
+      "\t}",
+      "\ttask \"${3:second task}\" {",
+      "\t\t${4:ask(\"What should task 2 do?\")}",
+      "\t}",
+      "}"
+    ],
+    "description": "Run multiple tasks in parallel"
   }
 }

@@ -29,6 +29,10 @@ const compileStatement = (statement: Statement): string => {
       return compileFunctionCall(statement)
     case 'wait_for_response':
       return 'Wait for user response before continuing.'
+    case 'task':
+      return compileTask(statement)
+    case 'parallel':
+      return compileParallel(statement)
     case 'break':
       return 'Stop current loop/process.'
     default:
@@ -107,4 +111,38 @@ const compileAssignment = (statement: any): string => {
 const compileFunctionCall = (statement: any): string => {
   const args = statement.args.length > 0 ? ` with arguments: ${statement.args.join(', ')}` : ''
   return `Call function ${statement.name}${args}`
+}
+
+const formatAgentType = (agent: string): string => {
+  const map: Record<string, string> = {
+    bash: 'Bash',
+    explore: 'Explore',
+    plan: 'Plan',
+    general: 'general-purpose'
+  }
+  return map[agent] || agent
+}
+
+const compileTask = (statement: any): string => {
+  const agentLabel = formatAgentType(statement.agent)
+  const desc = statement.description
+  const bodyInstructions = compileStatements(statement.body)
+
+  let result = `Spawn a ${agentLabel} subagent task: "${desc}"\nUse the Task tool with:\n- subagent_type: ${agentLabel}\n- description: ${desc}\n- prompt:`
+  bodyInstructions.forEach(instruction => {
+    result += `\n  - ${instruction}`
+  })
+
+  return result
+}
+
+const compileParallel = (statement: any): string => {
+  const tasks = statement.tasks as any[]
+  let result = `Spawn ${tasks.length} subagent tasks in parallel:`
+
+  tasks.forEach((task, index) => {
+    result += `\n\n### Task ${index + 1}\n${compileTask(task)}`
+  })
+
+  return result
 }

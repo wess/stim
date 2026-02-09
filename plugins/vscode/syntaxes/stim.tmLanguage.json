@@ -69,7 +69,7 @@
       "patterns": [
         {
           "name": "keyword.control.stim",
-          "match": "\\b(if|else|while|for|in|break|command)\\b"
+          "match": "\\b(if|else|while|for|in|break|command|task|parallel)\\b"
         }
       ]
     },
@@ -112,6 +112,10 @@
         {
           "name": "constant.language.boolean.stim",
           "match": "\\b(true|false)\\b"
+        },
+        {
+          "name": "support.type.agent.stim",
+          "match": "\\b(bash|explore|plan|general)\\b"
         }
       ]
     },

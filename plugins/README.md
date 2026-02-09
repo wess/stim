@@ -1,199 +1,149 @@
-# Spark Editor Plugins
+# Stim Editor Plugins
 
-Official editor plugins for the Spark DSL, providing syntax highlighting, compilation support, and IDE features.
+Editor plugins for the Stim DSL, providing syntax highlighting, compilation support, and IDE features.
 
 ## Available Plugins
 
-- **[VSCode](vscode/)** - Full-featured Visual Studio Code extension
-- **[Neovim](neovim/)** - Comprehensive Neovim/Vim plugin
+- **[VS Code](vscode/)** -- full-featured extension with snippets, diagnostics, and compilation
+- **[Neovim](neovim/)** -- plugin with syntax highlighting, text objects, templates, and quickfix
+- **[Zed](zed/)** -- extension with tree-sitter grammar, highlighting, and indentation
 
 ## Quick Start
 
-### VSCode Extension
+### VS Code
 
-#### Install Pre-built
-1. Download the latest `.vsix` file from releases
-2. Open VSCode
-3. Run command: `Extensions: Install from VSIX...`
-4. Select the downloaded file
+#### Pre-built
+1. Download the latest `.vsix` from releases
+2. Open VS Code
+3. Run: `Extensions: Install from VSIX...`
+4. Select the file
 
-#### Build from Source
+#### From Source
 ```bash
 cd plugins/vscode
 npm install
 npm run compile
-npm run package  # Creates spark-lang-1.0.0.vsix
+npm run package    # Creates stim-lang-1.0.0.vsix
 ```
 
-Then install the generated `.vsix` file in VSCode.
+### Neovim
 
-### Neovim Plugin
-
-#### Using a Plugin Manager
-
-**vim-plug:**
+#### vim-plug
 ```vim
-Plug 'user/spark', {'rtp': 'plugins/neovim'}
+Plug 'user/stim', {'rtp': 'plugins/neovim'}
 ```
 
-**packer.nvim:**
+#### packer.nvim
 ```lua
 use {
-  'user/spark',
+  'user/stim',
   rtp = 'plugins/neovim'
 }
 ```
 
-**lazy.nvim:**
+#### lazy.nvim
 ```lua
 {
-  'user/spark',
+  'user/stim',
   dir = 'plugins/neovim',
-  ft = 'spark',
+  ft = 'stim',
 }
 ```
 
-#### Manual Installation
+#### Manual
 ```bash
-# Copy to your Neovim config
-cp -r plugins/neovim ~/.config/nvim/pack/plugins/start/spark
+cp -r plugins/neovim ~/.config/nvim/pack/plugins/start/stim
+```
+
+### Zed
+
+#### From Extensions panel (when published)
+1. Open Zed
+2. Extensions panel (Cmd+Shift+X)
+3. Search for "Stim"
+4. Install
+
+#### From Source
+```bash
+cd plugins/zed/grammars
+npm install -g tree-sitter-cli
+tree-sitter generate
+ln -s $(pwd)/plugins/zed ~/.config/zed/extensions/installed/stim
 ```
 
 ## Features
 
-Both plugins provide:
+All plugins provide:
 
 ### Syntax Highlighting
-- Complete syntax highlighting for all Spark language constructs
-- Keywords, functions, strings, comments, operators
-- Error detection and highlighting
+- Keywords: `command`, `if`, `else`, `for`, `while`, `in`, `break`, `task`, `parallel`
+- Agent types: `bash`, `explore`, `plan`, `general`
+- Built-in functions, strings, comments, operators, arrays
+- Error detection (VS Code, Neovim)
 
-### Compilation Support
-- Compile `.spark` files directly from your editor
-- Error reporting with line numbers
-- Integration with quickfix/problems panel
+### Compilation Support (VS Code, Neovim)
+- Compile `.stim` files directly from the editor
+- Error reporting in the problems panel / quickfix window
 
-### Code Intelligence
-- Auto-completion for keywords and functions
-- Code snippets for common patterns
-- Smart indentation and formatting
-- Bracket matching and auto-closing
+### Code Intelligence (VS Code, Neovim)
+- Code snippets for commands, tasks, parallel blocks, loops
+- Auto-completion for keywords, agent types, and functions
+- Smart indentation and bracket matching
 
-### Commands & Shortcuts
-- Compile current file
-- Create new command templates
-- Navigate and select code blocks
+## Building
 
-## Building from Source
-
-### Prerequisites
-
-**VSCode Extension:**
-- Node.js 16+ and npm
-- TypeScript 5+
-- `vsce` package tool: `npm install -g vsce`
-
-**Neovim Plugin:**
-- Neovim 0.5.0+ (or Vim 8.0+)
-- No build required (VimScript)
-
-### VSCode Build Steps
-
+### VS Code
 ```bash
 cd plugins/vscode
-
-# Install dependencies
 npm install
-
-# Compile TypeScript
 npm run compile
-
-# Package extension
 npm run package
-
-# Output: spark-lang-1.0.0.vsix
 ```
 
-### Testing Extensions
+### Neovim
+No build required -- VimScript runs directly.
 
-**VSCode:**
+### Zed
 ```bash
-# Launch extension development host
-code --extensionDevelopmentPath=plugins/vscode
-
-# Or press F5 in VSCode with the extension folder open
+cd plugins/zed/grammars
+tree-sitter generate
 ```
 
-**Neovim:**
-```bash
-# Test with minimal config
-nvim -u NONE -c "set rtp+=plugins/neovim" test.spark
+## Plugin Structure
+
 ```
-
-## Development
-
-### VSCode Extension Structure
+plugins/
+├── vscode/
+│   ├── src/extension.ts              # Extension code
+│   ├── syntaxes/stim.tmLanguage.json # TextMate grammar
+│   ├── snippets/stim.json            # Code snippets
+│   ├── language-configuration.json   # Language config
+│   └── package.json                  # Extension manifest
+├── neovim/
+│   ├── plugin/stim.vim               # Main plugin
+│   ├── ftdetect/stim.vim             # Filetype detection
+│   ├── syntax/stim.vim               # Syntax highlighting
+│   ├── ftplugin/stim.vim             # Filetype settings
+│   └── autoload/stim/               # Autoloaded functions
+│       ├── compile.vim
+│       ├── template.vim
+│       └── util.vim
+└── zed/
+    ├── extension.toml                # Extension manifest
+    ├── grammars/grammar.js           # Tree-sitter grammar
+    └── languages/stim/
+        ├── config.toml               # Language config
+        ├── highlights.scm            # Highlight queries
+        └── indents.scm               # Indentation rules
 ```
-vscode/
-├── src/
-│   └── extension.ts      # Main extension code
-├── syntaxes/
-│   └── spark.tmLanguage.json  # TextMate grammar
-├── snippets/
-│   └── spark.json        # Code snippets
-├── language-configuration.json  # Language config
-├── package.json          # Extension manifest
-└── tsconfig.json         # TypeScript config
-```
-
-### Neovim Plugin Structure
-```
-neovim/
-├── plugin/
-│   └── spark.vim         # Main plugin file
-├── ftdetect/
-│   └── spark.vim         # Filetype detection
-├── syntax/
-│   └── spark.vim         # Syntax highlighting
-├── ftplugin/
-│   └── spark.vim         # Filetype settings
-└── autoload/
-    └── spark/            # Autoloaded functions
-        ├── compile.vim   # Compilation
-        ├── template.vim  # Templates
-        └── util.vim      # Utilities
-```
-
-## Publishing
-
-### VSCode Marketplace
-
-1. Create a publisher account at https://marketplace.visualstudio.com
-2. Get a Personal Access Token
-3. Login: `vsce login <publisher-name>`
-4. Publish: `npm run publish`
-
-### Vim/Neovim
-
-The Neovim plugin can be:
-- Added to vim-scripts organization
-- Published as a GitHub repository
-- Submitted to VimAwesome.com
 
 ## Contributing
 
 1. Fork the repository
-2. Create your feature branch
-3. Make changes in the appropriate plugin directory
-4. Test thoroughly in your editor
-5. Submit a pull request
+2. Make changes in the appropriate plugin directory
+3. Test in your editor
+4. Submit a pull request
 
 ## License
 
-MIT - see LICENSE file for details
-
-## Support
-
-- **Issues**: Report bugs on GitHub
-- **VSCode**: Check Output panel for Spark logs
-- **Neovim**: Run `:call spark#util#show_info()` for diagnostics
+MIT

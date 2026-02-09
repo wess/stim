@@ -109,11 +109,41 @@ bun run build
 # Use with: /quickplan
 ```
 
+## Step 6: Try a Task
+
+Spawn a subagent to handle a subtask:
+
+```stim
+command analyze {
+  task explore "find all API endpoints" {
+    ask("Search the codebase and list every API endpoint")
+    wait_for_response()
+  }
+
+  ask("Analysis complete!")
+}
+```
+
+Or run multiple tasks in parallel:
+
+```stim
+command full_scan {
+  parallel {
+    task explore "check frontend" {
+      ask("What frontend frameworks and patterns are used?")
+    }
+    task explore "check backend" {
+      ask("What backend frameworks and patterns are used?")
+    }
+  }
+}
+```
+
 ## What's Next?
 
-- **[Tutorial](Tutorial.md)** - Comprehensive step-by-step guide
+- **[Tutorial](Tutorial.md)** - Comprehensive guide covering variables, control flow, tasks, and parallel execution
 - **[API Reference](API.md)** - Complete syntax documentation
-- **[Examples](Examples.md)** - Real-world command examples
+- **[Examples](Examples.md)** - Real-world command examples including multi-agent workflows
 
 ## Common Issues
 

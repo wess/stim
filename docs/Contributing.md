@@ -92,11 +92,12 @@ stim/
 │   ├── types/             # TypeScript type definitions
 │   ├── parser/            # .stim file parser
 │   ├── compiler/          # Markdown generator
+│   ├── resolve/           # Task file resolution (I/O)
 │   ├── cli/               # Command-line interface
 │   └── main.ts            # Entry point
 ├── examples/              # Example .stim files
 ├── docs/                  # Documentation
-├── tests/                 # Test files (future)
+├── tests/                 # Test files
 └── package.json          # Project configuration
 ```
 
@@ -105,6 +106,7 @@ stim/
 - **`src/types/index.ts`**: Core type definitions for AST nodes
 - **`src/parser/index.ts`**: Parses `.stim` files into AST
 - **`src/compiler/index.ts`**: Converts AST to Claude-compatible markdown
+- **`src/resolve/index.ts`**: Resolves task file references (reads `.stim` files, inlines their bodies)
 - **`src/cli/index.ts`**: Command-line interface implementation
 
 ## Making Changes

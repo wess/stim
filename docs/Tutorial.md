@@ -11,9 +11,10 @@ A comprehensive guide to building sophisticated Claude Code commands with Stim.
 5. [Control Flow](#control-flow)
 6. [User Interaction](#user-interaction)
 7. [File Operations](#file-operations)
-8. [Building a Complete Command](#building-a-complete-command)
-9. [Advanced Techniques](#advanced-techniques)
-10. [Best Practices](#best-practices)
+8. [Tasks and Subagents](#tasks-and-subagents)
+9. [Building a Complete Command](#building-a-complete-command)
+10. [Advanced Techniques](#advanced-techniques)
+11. [Best Practices](#best-practices)
 
 ## Introduction
 
@@ -227,6 +228,94 @@ command file_demo {
   ask("Created your project files!")
 }
 ```
+
+## Tasks and Subagents
+
+Tasks let you spawn Claude Code subagents that work autonomously on subtasks. This is powerful for breaking complex workflows into independent pieces.
+
+### Spawning a Task
+
+The simplest form spawns a general-purpose subagent:
+
+```stim
+command research {
+  task "explore the auth module" {
+    ask("What authentication patterns exist in the codebase?")
+    wait_for_response()
+    ask("Summarize the findings")
+  }
+}
+```
+
+### Choosing an Agent Type
+
+Different agent types are optimized for different work:
+
+```stim
+command analyze {
+  // Fast codebase exploration
+  task explore "find all API endpoints" {
+    ask("List every API endpoint in the project")
+  }
+
+  // Shell command execution
+  task bash "run the test suite" {
+    ask("Run all tests and report results")
+  }
+
+  // Architecture planning
+  task plan "design the caching layer" {
+    ask("Design a caching strategy for this application")
+  }
+}
+```
+
+### Running Tasks in Parallel
+
+Use `parallel` to run multiple tasks concurrently:
+
+```stim
+command full_analysis {
+  parallel {
+    task explore "analyze frontend" {
+      ask("What frontend patterns and frameworks are used?")
+    }
+    task explore "analyze backend" {
+      ask("What backend patterns and APIs exist?")
+    }
+    task bash "check test coverage" {
+      ask("Run test coverage and report results")
+    }
+  }
+
+  ask("All analysis tasks complete. Summarize the findings.")
+}
+```
+
+### Reusing Commands with File References
+
+Extract common task logic into separate `.stim` files and reference them:
+
+```stim
+// helpers/security_check.stim
+command security_check {
+  ask("Scan for common security vulnerabilities")
+  wait_for_response()
+  ask("Check for exposed secrets and credentials")
+  wait_for_response()
+}
+```
+
+```stim
+// main.stim
+command review {
+  task("helpers/security_check.stim", explore)
+
+  ask("Security review complete!")
+}
+```
+
+The referenced file is read and inlined at compile time, so the output is entirely self-contained.
 
 ## Building a Complete Command
 

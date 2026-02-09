@@ -7,7 +7,8 @@ dist
 *.tgz
 .cursor
 CLAUDE.md
-CHANGELOG.md 
+CHANGELOG.md
+.claude
 
 # code coverage
 coverage

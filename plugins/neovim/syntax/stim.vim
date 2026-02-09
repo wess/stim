@@ -8,8 +8,9 @@ if exists('b:current_syntax')
 endif
 
 " Keywords
-syn keyword stimKeyword command if else while for in break
+syn keyword stimKeyword command if else while for in break task parallel
 syn keyword stimBoolean true false
+syn keyword stimAgentType bash explore plan general
 syn keyword stimBuiltinFunction ask confirm wait_for_response create_file
 syn keyword stimGitFunction git_init git_commit git_push git_status
 syn keyword stimGithubFunction github_create_repo github_create_pr github_create_issue
@@ -53,6 +54,7 @@ syn match stimBrackets '[(){}\[\]]'
 " Define highlighting groups
 hi def link stimKeyword Keyword
 hi def link stimBoolean Boolean
+hi def link stimAgentType Type
 hi def link stimBuiltinFunction Function
 hi def link stimGitFunction Function
 hi def link stimGithubFunction Function

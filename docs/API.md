@@ -8,9 +8,10 @@ Complete reference for Stim syntax, functions, and features.
 2. [Variables](#variables)
 3. [Control Flow](#control-flow)
 4. [Built-in Functions](#built-in-functions)
-5. [Operators](#operators)
-6. [Comments](#comments)
-7. [Compilation Output](#compilation-output)
+5. [Tasks and Parallelism](#tasks-and-parallelism)
+6. [Operators](#operators)
+7. [Comments](#comments)
+8. [Compilation Output](#compilation-output)
 
 ## Command Structure
 
@@ -290,6 +291,118 @@ append_file("path/to/file", "content")
 delete_file("path/to/file")
 ```
 
+## Tasks and Parallelism
+
+Tasks spawn Claude Code subagents to handle subtasks autonomously. This is one of Stim's most powerful features, enabling complex multi-agent workflows.
+
+### Agent Types
+
+| Agent | Description |
+|---|---|
+| `general` | General-purpose agent (default). Maps to `general-purpose` in Claude Code. |
+| `explore` | Fast codebase exploration agent. Use for searching files, reading code, answering questions about the codebase. |
+| `bash` | Command execution specialist. Use for git operations, builds, terminal tasks. |
+| `plan` | Software architect agent. Use for designing implementation plans. |
+
+### Inline Task
+
+Spawn a subagent with an inline body:
+
+```stim
+task "description" {
+  // statements the agent will execute
+}
+```
+
+With an explicit agent type:
+
+```stim
+task explore "find auth patterns" {
+  ask("What authentication patterns exist in the codebase?")
+  wait_for_response()
+}
+```
+
+**Compiled Output:**
+```markdown
+Spawn a Explore subagent task: "find auth patterns"
+Use the Task tool with:
+- subagent_type: Explore
+- description: find auth patterns
+- prompt:
+  - Ask the user the question from variable: What authentication patterns exist in the codebase?
+  - Wait for user response before continuing.
+```
+
+### File Reference Task
+
+Reference another `.stim` file. The file is read and parsed at compile time, and its body is inlined:
+
+```stim
+task("helpers/research.stim")
+task("helpers/research.stim", explore)
+```
+
+**Parameters:**
+- First argument (string): path to `.stim` file, relative to the current file
+- Second argument (optional): agent type
+
+The referenced file must contain a valid `command` declaration. The command name becomes the task description if none is provided.
+
+### Parallel Block
+
+Run multiple tasks concurrently:
+
+```stim
+parallel {
+  task "analyze frontend" {
+    ask("What frontend patterns exist?")
+  }
+  task explore "analyze backend" {
+    ask("What backend patterns exist?")
+  }
+}
+```
+
+**Compiled Output:**
+```markdown
+Spawn 2 subagent tasks in parallel:
+
+### Task 1
+Spawn a general-purpose subagent task: "analyze frontend"
+Use the Task tool with:
+- subagent_type: general-purpose
+- description: analyze frontend
+- prompt:
+  - Ask the user the question from variable: What frontend patterns exist?
+
+### Task 2
+Spawn a Explore subagent task: "analyze backend"
+Use the Task tool with:
+- subagent_type: Explore
+- description: analyze backend
+- prompt:
+  - Ask the user the question from variable: What backend patterns exist?
+```
+
+**Rules:**
+- A `parallel` block may only contain `task` statements
+- Each task runs as an independent subagent
+- Tasks within a parallel block execute concurrently
+
+### Circular Reference Detection
+
+When using file reference tasks, Stim detects circular references at compile time:
+
+```stim
+// a.stim
+command a {
+  task("b.stim")  // b.stim references a.stim -> Error!
+}
+```
+
+This produces: `Error: Circular task file reference detected: b.stim`
+
 ## Operators
 
 ### Arithmetic Operators
@@ -418,6 +531,48 @@ create_file("test.txt", "content")
 Create file "test.txt" with content: content
 ```
 
+### Tasks
+```stim
+task explore "find bugs" {
+  ask("What bugs exist?")
+}
+```
+
+**Compiles to:**
+```
+Spawn a Explore subagent task: "find bugs"
+Use the Task tool with:
+- subagent_type: Explore
+- description: find bugs
+- prompt:
+  - Ask the user the question from variable: What bugs exist?
+```
+
+### Parallel Tasks
+```stim
+parallel {
+  task "task A" {
+    ask("Do A")
+  }
+  task "task B" {
+    ask("Do B")
+  }
+}
+```
+
+**Compiles to:**
+```
+Spawn 2 subagent tasks in parallel:
+
+### Task 1
+Spawn a general-purpose subagent task: "task A"
+...
+
+### Task 2
+Spawn a general-purpose subagent task: "task B"
+...
+```
+
 ## Error Handling
 
 ### Common Compilation Errors
@@ -465,8 +620,8 @@ Error: Input file must have .stim extension
 This API reference is for Stim v1.0. Future versions may include:
 
 ### Planned Features
-- **v1.1**: Import system, standard library, string interpolation
-- **v2.0**: Multi-file projects, package management, IDE extensions
+- **v1.1**: String interpolation, standard library
+- **v2.0**: Multi-file projects, package management
 
 ### Deprecation Policy
 - Breaking changes will be announced in advance

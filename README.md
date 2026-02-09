@@ -1,18 +1,19 @@
-# Stim ⚡
+# Stim
 
-**A powerful DSL for building sophisticated Claude Code commands with control flow, variables, and complex logic.**
+**A DSL compiler that transforms `.stim` files into Claude Code commands.**
+
+Stim gives you variables, control flow, subagent tasks, and parallel execution for building sophisticated Claude Code slash commands. Write `.stim`, compile to markdown, use as `/command`.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ---
 
-## 🚀 What is Stim?
+## Why Stim?
 
-Stim transforms the way you create Claude Code commands. Instead of writing complex, hard-to-maintain markdown instructions, you write clear, programmatic `.stim` files with loops, conditionals, and variables that compile into Claude-ready `.md` commands.
+Claude Code commands are markdown files. Simple ones are fine to write by hand, but complex workflows with branching logic, loops, and multi-agent orchestration become unreadable fast.
 
-### The Problem
+**Markdown by hand:**
 ```markdown
-<!-- Complex markdown with repetitive instructions -->
 Ask me one question at a time so we can develop a spec...
 Remember, only one question at a time...
 Make sure to not be agreeable...
@@ -20,50 +21,57 @@ Once we are done, save the spec as SPEC.md...
 Ask if the user wants to create a git repo...
 ```
 
-### The Stim Solution
+**Stim:**
 ```stim
 command brainstorm {
   questions = ["What problem?", "Who are users?", "What constraints?"]
-  
+
   for question in questions {
     ask(question)
     wait_for_response()
   }
-  
+
   while (!spec_complete) {
     ask("Next critical question?")
     if (confirm("Spec complete?")) {
       spec_complete = true
     }
   }
-  
-  if (confirm("Create GitHub repo?")) {
-    git_init()
-    create_file("SPEC.md", "generated_spec")
-  }
+
+  create_file("SPEC.md", "generated_spec")
 }
 ```
 
-## ✨ Key Features
+| Markdown | Stim |
+|----------|------|
+| Hard to maintain complex logic | Clean, readable control flow |
+| Repetitive instructions | Variables and loops |
+| No error checking | Type-safe compilation |
+| Difficult to version control | Git-friendly source files |
+| Copy-paste reuse | Modular file references |
+| Single-agent only | Multi-agent parallelism |
 
-- **🔄 Control Flow** - Loops, conditionals, and branching logic
-- **📦 Variables** - Store and reuse data, arrays, and configurations  
-- **💬 User Interaction** - Built-in primitives for asking questions and getting confirmation
-- **📁 File Operations** - Create, read, and manipulate files programmatically
-- **🎯 Type-Safe** - Built with TypeScript for reliability and great developer experience
-- **⚡ Fast** - Powered by Bun for lightning-fast compilation
-- **🔥 Standalone** - Compiles to a single executable binary with no dependencies
-- **🛠️ Extensible** - Clean architecture ready for future enhancements
+## Features
 
-## 📦 Installation
+- **Control flow** -- `if`/`else`, `while`, `for`, `break`
+- **Variables** -- strings, booleans, arrays
+- **User interaction** -- `ask()`, `confirm()`, `wait_for_response()`
+- **File operations** -- `create_file()` and more
+- **Subagent tasks** -- spawn `bash`, `explore`, `plan`, or `general` agents
+- **Parallel execution** -- run multiple tasks concurrently with `parallel {}`
+- **File references** -- `task("other.stim")` inlines another command at compile time
+- **Standalone binary** -- compiles to a single executable with no runtime dependencies
+- **Package management** -- `stim add github/user/repo` to install shared commands
 
-### Option 1: Download Pre-built Binary (Recommended)
+## Installation
 
-Download the latest release for your platform from [GitHub Releases](https://github.com/user/stim/releases):
+### Pre-built Binary
 
-**Linux (x64):**
+Download from [GitHub Releases](https://github.com/user/stim/releases):
+
+**macOS (Apple Silicon):**
 ```bash
-curl -L https://github.com/user/stim/releases/latest/download/stim-linux-x64 -o stim
+curl -L https://github.com/user/stim/releases/latest/download/stim-darwin-arm64 -o stim
 chmod +x stim
 sudo mv stim /usr/local/bin/
 ```
@@ -75,201 +83,312 @@ chmod +x stim
 sudo mv stim /usr/local/bin/
 ```
 
-**macOS (Apple Silicon):**
+**Linux (x64):**
 ```bash
-curl -L https://github.com/user/stim/releases/latest/download/stim-darwin-arm64 -o stim
+curl -L https://github.com/user/stim/releases/latest/download/stim-linux-x64 -o stim
 chmod +x stim
 sudo mv stim /usr/local/bin/
 ```
 
 **Windows (x64):**
-Download `stim-windows-x64.exe` from releases and add it to your PATH.
+Download `stim-windows-x64.exe` from releases and add to your PATH.
 
-**Verify installation:**
+### Build from Source
+
+Requires [Bun](https://bun.sh).
+
 ```bash
-stim version
-```
-
-### Option 2: Build from Source
-
-**Prerequisites:**
-- [Bun](https://bun.sh) (latest version)
-- [Claude Code](https://claude.ai/code)
-
-**Setup:**
-```bash
-# Clone the repository
 git clone <repository-url>
 cd stim
-
-# Install dependencies
 bun install
-
-# Build executable
 bun run build
-
-# Verify installation
 ./dist/stim version
 ```
 
-## 🏃‍♂️ Quick Start
+## Quick Start
 
-1. **Create a `.stim` file:**
+**1. Write a `.stim` file:**
+
 ```stim
-command hello {
-  name = "World"
+command greet {
   ask("What's your name?")
   wait_for_response()
-  ask("Hello, " + name + "! How are you today?")
+  ask("Nice to meet you! How can I help today?")
 }
 ```
 
-2. **Compile to Claude command:**
+**2. Install it as a Claude Code command:**
+
 ```bash
-bun run build
-./dist/stim compile hello.stim
+stim install greet.stim
 ```
 
-3. **Use in Claude Code:**
-```bash
-/hello
+**3. Use it:**
+
+```
+/greet
 ```
 
-## 📖 Documentation
+The `install` command compiles and places the output in `~/.claude/commands/`. Use `stim install greet.stim --local` to install to `.claude/commands/` in the current project instead.
 
-- **[Quickstart Guide](docs/Quickstart.md)** - Get up and running in 5 minutes
-- **[Tutorial](docs/Tutorial.md)** - Step-by-step guide to building your first commands
-- **[API Reference](docs/API.md)** - Complete syntax and function reference
-- **[Examples](docs/Examples.md)** - Real-world command examples
-- **[Syntax Guide](docs/Syntax-Reference.md)** - Complete language reference
-- **[FAQ](docs/FAQ.md)** - Common questions and troubleshooting
+To compile without installing (outputs to `dist/`):
 
-## 💡 Example Commands
+```bash
+stim compile greet.stim
+```
 
-All your existing Claude commands, now in Stim:
-
-- **[brainstorm.stim](examples/brainstorm.stim)** - Interactive spec development
-- **[commit.stim](examples/commit.stim)** - Semantic commit workflow  
-- **[plan.stim](examples/plan.stim)** - Project planning with phases
-- **[session-summary.stim](examples/session-summary.stim)** - Session analysis
-- **[security-review.stim](examples/security-review.stim)** - Security assessment
-- **[recall.stim](examples/recall.stim)** - Context management system
-
-## 🛠️ Development
+## Language Overview
 
 ### Commands
-```bash
-# Build standalone executable (creates dist/stim binary)
-bun run build
 
-# Build for all platforms (Linux, macOS, Windows)
-bun run build:all
+Every `.stim` file declares one command:
 
-# Compile a .stim file using the standalone executable
-./dist/stim compile examples/brainstorm.stim
-
-# Run in development mode (without building)
-bun run dev compile examples/brainstorm.stim
-
-# Show version and help
-./dist/stim version
-./dist/stim help
-```
-
-### Project Structure
-```
-stim/
-├── src/
-│   ├── types/           # Type definitions
-│   ├── parser/          # .stim file parser
-│   ├── compiler/        # Markdown generator
-│   └── cli/             # Command-line interface
-├── examples/            # Example .stim commands
-├── docs/               # Documentation
-└── dist/               # Built executable
-```
-
-## 🔧 Language Overview
-
-### Basic Syntax
 ```stim
-command mycommand {
-  // Variables
-  name = "value"
-  items = ["a", "b", "c"]
-  flag = true
-  
-  // Control flow
-  for item in items {
-    ask(item)
+command deploy {
+  // statements here
+}
+```
+
+The command name becomes the slash command (`/deploy`).
+
+### Variables
+
+```stim
+name = "production"
+items = ["api", "web", "worker"]
+ready = true
+```
+
+### Control Flow
+
+```stim
+if (ready) {
+  for service in items {
+    ask("Deploy " + service + "?")
     wait_for_response()
   }
-  
-  // Conditionals
-  if (flag) {
-    create_file("output.md", "content")
-  }
-  
-  // User interaction
-  if (confirm("Continue?")) {
-    ask("What's next?")
+}
+
+while (!done) {
+  ask("Any more services?")
+  if (confirm("All done?")) {
+    done = true
   }
 }
 ```
 
 ### Built-in Functions
-- **User Interaction:** `ask()`, `confirm()`, `wait_for_response()`
-- **File Operations:** `create_file()`, `read_file()`, `append_file()`
-- **Git Operations:** `git_init()`, `git_commit()`, `git_push()`
-- **GitHub Integration:** `github_create_repo()`, `github_create_pr()`
 
-## 🌟 Why Stim?
+```stim
+ask("What should I work on?")       // prompt the user
+wait_for_response()                  // pause for user input
+confirm("Deploy to production?")     // yes/no confirmation
+create_file("output.md", content)    // create a file
+```
 
-| **Traditional Markdown** | **Stim** |
-|-------------------------|-----------|
-| Hard to maintain complex logic | Clean, readable control flow |
-| Repetitive instructions | Reusable variables and loops |
-| No error checking | Type-safe compilation |
-| Difficult to version control | Git-friendly source code |
-| Manual updates everywhere | Single source of truth |
+### Tasks
 
-## 🚧 Roadmap
+Spawn Claude Code subagents for autonomous subtasks:
 
-### v1.1 (Next)
-- [ ] Import system for code reuse
-- [ ] Standard library of common patterns
-- [ ] Better error messages with line numbers
-- [ ] String interpolation support
+```stim
+// Default general-purpose agent
+task "explore the auth module" {
+  ask("What patterns exist?")
+  wait_for_response()
+}
 
-### v2.0 (Future)
-- [ ] Package manager for sharing commands
-- [ ] Multi-file projects
-- [ ] Template system
-- [ ] IDE extensions
+// Specify an agent type: bash, explore, plan, general
+task explore "find API endpoints" {
+  ask("List all API endpoints in the project")
+}
 
-## 🤝 Contributing
+// Reference another .stim file (inlined at compile time)
+task("helpers/security.stim", explore)
+```
 
-We welcome contributions! See [CONTRIBUTING.md](docs/Contributing.md) for guidelines.
+Agent types:
 
-### Development Setup
+| Type | Use for |
+|------|---------|
+| `general` | General-purpose work (default) |
+| `explore` | Fast codebase search and analysis |
+| `bash` | Shell commands, git, builds |
+| `plan` | Architecture and implementation planning |
+
+### Parallel Execution
+
+Run multiple tasks concurrently:
+
+```stim
+parallel {
+  task explore "analyze frontend" {
+    ask("What frontend patterns are used?")
+  }
+  task explore "analyze backend" {
+    ask("What backend patterns are used?")
+  }
+  task bash "run tests" {
+    ask("Execute the test suite")
+  }
+}
+```
+
+This compiles to instructions that tell Claude Code to spawn all three subagents simultaneously.
+
+## CLI Reference
+
+```bash
+stim compile <file.stim>                     # Compile to dist/
+stim install <file.stim> [--local]           # Install as Claude command
+stim add <github/user/repo[@tag]> [--local]  # Add package from GitHub
+stim remove <github/user/repo> [--local]     # Remove installed package
+stim update [github/user/repo] [--local]     # Update packages
+stim version                                 # Show version
+stim help                                    # Show help
+```
+
+## Architecture
+
+Three-stage pipeline: **Parse -> Resolve -> Compile**
+
+```
+.stim file -> Parser -> AST -> Resolver -> AST (resolved) -> Compiler -> Markdown
+```
+
+```
+stim/
+├── src/
+│   ├── main.ts          # Entry point
+│   ├── cli/             # CLI arg parsing, file I/O
+│   ├── parser/          # Recursive descent parser -> AST
+│   ├── resolve/         # Task file resolution (reads referenced .stim files)
+│   ├── compiler/        # AST -> markdown generation
+│   └── types/           # Statement, Command, AgentType definitions
+├── examples/            # Example .stim commands
+├── plugins/
+│   ├── vscode/          # VS Code extension (syntax, snippets, diagnostics)
+│   ├── neovim/          # Neovim plugin (syntax, text objects, templates)
+│   └── zed/             # Zed extension (tree-sitter grammar, highlighting)
+├── docs/                # Documentation
+├── tests/               # Test suite
+└── dist/                # Built executable
+```
+
+The parser and compiler are pure functions with no I/O. The resolver handles file reads for `task("file.stim")` references, keeping the pipeline clean.
+
+## Documentation
+
+- **[Quickstart](docs/Quickstart.md)** -- get running in 5 minutes
+- **[Tutorial](docs/Tutorial.md)** -- step-by-step guide covering variables, control flow, tasks, and parallel execution
+- **[Syntax Reference](docs/Syntax-Reference.md)** -- complete grammar, keywords, and EBNF
+- **[API Reference](docs/API.md)** -- every statement type, function, and operator with compiled output examples
+- **[Examples](docs/Examples.md)** -- real-world commands: surveys, code reviews, CI pipelines, multi-agent research
+- **[FAQ](docs/FAQ.md)** -- common questions and troubleshooting
+- **[Contributing](docs/Contributing.md)** -- development setup, code style, PR guidelines
+
+## Examples
+
+The `examples/` directory contains ready-to-use commands:
+
+- **[brainstorm.stim](examples/brainstorm.stim)** -- interactive spec development
+- **[commit.stim](examples/commit.stim)** -- semantic commit workflow
+- **[plan.stim](examples/plan.stim)** -- project planning with phases
+- **[session-summary.stim](examples/session-summary.stim)** -- session analysis
+- **[security-review.stim](examples/security-review.stim)** -- security assessment
+- **[recall.stim](examples/recall.stim)** -- context management
+
+### Multi-Agent Example
+
+A command that runs parallel analysis, then synthesizes the results:
+
+```stim
+command deep_review {
+  ask("What code should I review?")
+  wait_for_response()
+
+  parallel {
+    task explore "security scan" {
+      ask("Check for SQL injection, XSS, auth flaws, exposed secrets")
+      wait_for_response()
+    }
+    task explore "performance audit" {
+      ask("Find N+1 queries, unnecessary allocations, blocking I/O")
+      wait_for_response()
+    }
+    task explore "architecture review" {
+      ask("Evaluate separation of concerns and dependency management")
+      wait_for_response()
+    }
+  }
+
+  ask("Compile all findings into a single report")
+  create_file("REVIEW.md", "review_report")
+}
+```
+
+### Modular Commands with File References
+
+```stim
+// helpers/lint.stim
+command lint {
+  ask("Run linter on all source files and fix auto-fixable issues")
+}
+
+// precommit.stim
+command precommit {
+  parallel {
+    task("helpers/lint.stim", bash)
+    task("helpers/typecheck.stim", bash)
+  }
+  ask("All checks passed!")
+}
+```
+
+## Development
+
+```bash
+bun run dev                    # Run without building
+bun run dev -- compile f.stim  # Compile in dev mode
+bun run build                  # Build standalone binary
+bun run build:all              # Cross-platform builds
+bun test                       # Run test suite
+```
+
+## Editor Support
+
+### VS Code
+
+The `plugins/vscode/` extension provides:
+- Syntax highlighting via TextMate grammar
+- Snippets for commands, tasks, parallel blocks, loops
+- Compile commands from the command palette
+- Real-time diagnostics
+
+### Neovim
+
+The `plugins/neovim/` plugin provides:
+- Syntax highlighting with agent type support
+- Text objects, templates, and auto-completion
+- Compilation with quickfix integration
+
+### Zed
+
+The `plugins/zed/` extension provides:
+- Tree-sitter grammar for full syntax highlighting
+- Smart indentation and bracket matching
+- See the [Zed plugin README](plugins/zed/README.md) for build instructions
+
+## Contributing
+
+See [Contributing](docs/Contributing.md) for development setup, code style, and PR guidelines.
+
 ```bash
 git clone <repository-url>
 cd stim
 bun install
-bun run build
-./dist/stim compile examples/brainstorm.stim
+bun test
 ```
 
-## 📄 License
+## License
 
-MIT License - see [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- Built with [Bun](https://bun.sh) for performance
-- Designed for [Claude Code](https://claude.ai/code) integration
-- Inspired by the need for better command automation
-
----
-
-**Ready to stim your Claude Code workflow?** [Get started with our tutorial](docs/Tutorial.md) 🚀
+MIT -- see [LICENSE](LICENSE).

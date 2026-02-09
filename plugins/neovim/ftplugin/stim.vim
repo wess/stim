@@ -112,13 +112,16 @@ function! StimComplete(findstart, base)
     let completions = []
     
     " Keywords
-    let keywords = ['command', 'if', 'else', 'while', 'for', 'in', 'break', 'true', 'false']
-    
+    let keywords = ['command', 'if', 'else', 'while', 'for', 'in', 'break', 'true', 'false', 'task', 'parallel']
+
+    " Agent types
+    let agents = ['bash', 'explore', 'plan', 'general']
+
     " Built-in functions
     let functions = ['ask', 'confirm', 'wait_for_response', 'create_file', 'git_init', 'git_commit', 'git_push', 'github_create_repo']
     
     " Filter based on input
-    for word in keywords + functions
+    for word in keywords + agents + functions
       if word =~ '^' . a:base
         call add(completions, word)
       endif
