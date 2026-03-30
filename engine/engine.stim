@@ -1,0 +1,11 @@
+command stim {
+  ask("Read the .stim file path provided by the user. Read the file from disk.")
+  ask("Look for lines starting with @ inside the command block. Extract each as a key/value pair.")
+  ask("Apply defaults for missing annotations: topology=pipeline, memory=none, on_error=escalate.")
+  ask("Based on the topology value, read the corresponding module file:")
+  ask("- pipeline: read ~/.claude/commands/engine/pipeline.md")
+  ask("- fanout: read ~/.claude/commands/engine/fanout.md")
+  ask("- supervisor: read ~/.claude/commands/engine/supervisor.md")
+  ask("Follow the topology module instructions to execute the workflow tasks from the .stim file.")
+  ask("If memory=shared: create .stim/state/ directory. Clear any stale state from previous runs of this workflow.")
+}

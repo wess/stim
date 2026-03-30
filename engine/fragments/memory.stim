@@ -1,0 +1,1 @@
+memory_instruction = "Summarize your output in 1-2 sentences. Focus on: results, decisions, errors. Omit: formatting, verbose logs, intermediate steps."

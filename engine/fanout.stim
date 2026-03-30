@@ -1,0 +1,14 @@
+command fanout {
+  ask("Execute the workflow tasks. For parallel blocks, spawn all tasks concurrently.")
+  ask("Before each task that involves destructive operations: never auto-execute destructive operations (file deletion, force push, production deployment). Always confirm with the user first.")
+  ask("After each task completes, check for [status: ok] or [status: error] in the output.")
+  ask("If [status: error]: stop and present which step failed, the error reason, compressed context of what succeeded, and options: retry / skip / abort. Let the user decide.")
+  ask("After a parallel block completes, collect results as labeled summaries.")
+  ask("Format: [parallel results] followed by - task name: summary for each task.")
+  ask("If memory=shared: for each completed task, summarize the output in 1-2 sentences. Focus on results, decisions, errors. Omit formatting, verbose logs, intermediate steps.")
+  ask("Pass the labeled parallel summaries to the first task after the parallel block.")
+  ask("Non-parallel tasks before and after parallel blocks run sequentially like pipeline.")
+  ask("Keep only the last 2 step summaries in your working context. Drop older summaries.")
+  ask("If memory=shared: write state to .stim/state/<workflow>.json. Append output to .stim/state/<workflow>.log.")
+  ask("On successful completion of all tasks: clean up .stim/state/ files.")
+}

@@ -1,0 +1,11 @@
+command pipeline {
+  ask("Execute each task in the workflow sequentially, one at a time.")
+  ask("Before each task that involves destructive operations: never auto-execute destructive operations (file deletion, force push, production deployment). Always confirm with the user first.")
+  ask("After each task completes, check for [status: ok] or [status: error] in the output.")
+  ask("If [status: error]: stop and present which step failed, the error reason, compressed context of what succeeded, and options: retry / skip / abort. Let the user decide.")
+  ask("If memory=shared: after each task, summarize the output in 1-2 sentences. Focus on results, decisions, errors. Omit formatting, verbose logs, intermediate steps.")
+  ask("If memory=shared: write the summary to .stim/state/<workflow>.json under last_outputs. Append full output to .stim/state/<workflow>.log.")
+  ask("Keep only the last 2 step summaries in your working context. Drop older summaries.")
+  ask("Pass the previous step summary to the next task as context.")
+  ask("On successful completion of all tasks: clean up .stim/state/ files.")
+}
