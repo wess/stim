@@ -7,17 +7,61 @@ export const parseCommand = (source: string): Command => {
     throw new Error('Empty command file')
   }
   
-  const firstLine = lines[0]
+  // Extract imports before command block
+  const imports: { path: string }[] = []
+  let commandStartIndex = 0
+
+  for (let i = 0; i < lines.length; i++) {
+    const importMatch = lines[i].match(/^import\s+["'](.+?)["']$/)
+    if (importMatch) {
+      imports.push({ path: importMatch[1] })
+      commandStartIndex = i + 1
+    } else {
+      break
+    }
+  }
+
+  const remainingLines = lines.slice(commandStartIndex)
+
+  if (remainingLines.length === 0) {
+    throw new Error('Expected command declaration: command <name> {')
+  }
+
+  const firstLine = remainingLines[0]
   const commandMatch = firstLine.match(/^command\s+(\w+)\s*\{$/)
-  
+
   if (!commandMatch) {
     throw new Error('Expected command declaration: command <name> {')
   }
-  
+
   const name = commandMatch[1]
-  const body = parseBody(lines.slice(1, -1)) // Remove first line and closing brace
-  
-  return { name, body }
+  const body = parseBody(remainingLines.slice(1, -1))
+
+  const annotations: Record<string, string> = {}
+  const filtered: Statement[] = []
+  let pastAnnotations = false
+
+  for (const stmt of body) {
+    if (stmt.type === 'annotation') {
+      if (pastAnnotations) {
+        throw new Error('Annotations must appear before other statements')
+      }
+      if (annotations[stmt.key]) {
+        throw new Error(`Duplicate annotation: @${stmt.key}`)
+      }
+      annotations[stmt.key] = stmt.value
+    } else {
+      pastAnnotations = true
+      filtered.push(stmt)
+    }
+  }
+
+  return {
+    name,
+    body: filtered,
+    ...(Object.keys(annotations).length > 0 ? { annotations } : {}),
+    ...(imports.length > 0 ? { imports } : {}),
+  }
 }
 
 const parseBody = (lines: string[]): Statement[] => {
@@ -73,6 +117,8 @@ const parseBody = (lines: string[]): Statement[] => {
       statements.push({ type: 'break' })
     } else if (line === 'wait_for_response()') {
       statements.push({ type: 'wait_for_response' })
+    } else if (line.startsWith('@')) {
+      statements.push(parseAnnotation(line))
     } else if (line.includes(' = ')) {
       statements.push(parseAssignment(line))
     } else {
@@ -84,6 +130,32 @@ const parseBody = (lines: string[]): Statement[] => {
   }
   
   return statements
+}
+
+const VALID_ANNOTATIONS: Record<string, string[]> = {
+  topology: ['pipeline', 'fanout', 'supervisor'],
+  memory: ['shared', 'none'],
+  on_error: ['escalate'],
+}
+
+const parseAnnotation = (line: string): Statement => {
+  const match = line.match(/^@(\w+)\s+(.+)$/)
+  if (!match) throw new Error(`Invalid annotation: ${line}`)
+
+  const key = match[1]
+  const value = match[2].trim()
+
+  if (!VALID_ANNOTATIONS[key]) {
+    const valid = Object.keys(VALID_ANNOTATIONS).join(', ')
+    throw new Error(`Unknown annotation @${key}. Valid annotations: ${valid}`)
+  }
+
+  if (!VALID_ANNOTATIONS[key].includes(value)) {
+    const valid = VALID_ANNOTATIONS[key].join(', ')
+    throw new Error(`Invalid value "${value}" for @${key}. Valid values: ${valid}`)
+  }
+
+  return { type: 'annotation', key, value }
 }
 
 const parseAsk = (line: string): Statement => {

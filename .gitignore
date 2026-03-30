@@ -9,6 +9,8 @@ dist
 CLAUDE.md
 CHANGELOG.md
 .claude
+.omc
+docs/superpowers
 
 # code coverage
 coverage

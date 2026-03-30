@@ -2,11 +2,20 @@ import { readFileSync, existsSync } from 'fs'
 import { resolve, dirname } from 'path'
 import type { Command, Statement } from '../types/index.js'
 import { parseCommand } from '../parser/index.js'
+import { resolveImports } from '../imports/index.js'
 
-export const resolveTaskFiles = (command: Command, basePath: string): Command => ({
-  ...command,
-  body: resolveStatements(command.body, basePath, new Set())
-})
+export const resolveTaskFiles = (command: Command, basePath: string): Command => {
+  let importedScope: Record<string, any> = {}
+  if (command.imports && command.imports.length > 0) {
+    importedScope = resolveImports(command.imports, basePath, new Set())
+  }
+
+  return {
+    ...command,
+    body: resolveStatements(command.body, basePath, new Set()),
+    ...(Object.keys(importedScope).length > 0 ? { importedScope } : {}),
+  }
+}
 
 const resolveStatements = (statements: Statement[], basePath: string, visited: Set<string>): Statement[] =>
   statements.map(s => resolveStatement(s, basePath, visited))

@@ -40,6 +40,10 @@ const showHelp = (version: string) => {
   console.log('  stim add github/wess/brainstorm@v1.0.0 --local')
   console.log('  stim remove github/wess/brainstorm')
   console.log('  stim update')
+  console.log('')
+  console.log('Engine:')
+  console.log('  stim install engine/engine.stim            Install the Stim engine')
+  console.log('  Then use /stim workflow.stim in Claude Code')
 }
 
 export const main = () => {

@@ -1,6 +1,9 @@
 export type Command = {
   name: string
   body: Statement[]
+  annotations?: Record<string, string>
+  imports?: ImportStatement[]
+  importedScope?: Record<string, any>
 }
 
 export type Statement = {
@@ -21,6 +24,7 @@ export type StatementType =
   | 'function_call'
   | 'task'
   | 'parallel'
+  | 'annotation'
 
 export type AgentType = 'bash' | 'explore' | 'plan' | 'general'
 
@@ -35,6 +39,16 @@ export type TaskStatement = {
 export type ParallelStatement = {
   type: 'parallel'
   tasks: Statement[]
+}
+
+export type ImportStatement = {
+  path: string
+}
+
+export type AnnotationStatement = {
+  type: 'annotation'
+  key: string
+  value: string
 }
 
 export type AskStatement = {
