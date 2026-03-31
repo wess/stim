@@ -3,7 +3,7 @@ import { describe, test, expect } from 'bun:test'
 describe('cli help output', () => {
   test('shows help with no args', async () => {
     const proc = Bun.spawn(['bun', 'run', 'src/main.ts'], {
-      cwd: '/Users/wess/Desktop/Dev/stim',
+      cwd: import.meta.dir + '/..',
       stdout: 'pipe',
     })
     const output = await new Response(proc.stdout).text()
@@ -20,7 +20,7 @@ describe('cli help output', () => {
 
   test('shows help with help command', async () => {
     const proc = Bun.spawn(['bun', 'run', 'src/main.ts', 'help'], {
-      cwd: '/Users/wess/Desktop/Dev/stim',
+      cwd: import.meta.dir + '/..',
       stdout: 'pipe',
     })
     const output = await new Response(proc.stdout).text()
@@ -34,7 +34,7 @@ describe('cli help output', () => {
 
   test('shows version', async () => {
     const proc = Bun.spawn(['bun', 'run', 'src/main.ts', 'version'], {
-      cwd: '/Users/wess/Desktop/Dev/stim',
+      cwd: import.meta.dir + '/..',
       stdout: 'pipe',
     })
     const output = await new Response(proc.stdout).text()
@@ -45,7 +45,7 @@ describe('cli help output', () => {
 
   test('exits with error on unknown command', async () => {
     const proc = Bun.spawn(['bun', 'run', 'src/main.ts', 'nonsense'], {
-      cwd: '/Users/wess/Desktop/Dev/stim',
+      cwd: import.meta.dir + '/..',
       stderr: 'pipe',
     })
     const stderr = await new Response(proc.stderr).text()
@@ -57,7 +57,7 @@ describe('cli help output', () => {
 
   test('add with no args shows error', async () => {
     const proc = Bun.spawn(['bun', 'run', 'src/main.ts', 'add'], {
-      cwd: '/Users/wess/Desktop/Dev/stim',
+      cwd: import.meta.dir + '/..',
       stderr: 'pipe',
     })
     const stderr = await new Response(proc.stderr).text()
@@ -69,7 +69,7 @@ describe('cli help output', () => {
 
   test('remove with no args shows error', async () => {
     const proc = Bun.spawn(['bun', 'run', 'src/main.ts', 'remove'], {
-      cwd: '/Users/wess/Desktop/Dev/stim',
+      cwd: import.meta.dir + '/..',
       stderr: 'pipe',
     })
     const stderr = await new Response(proc.stderr).text()
@@ -81,7 +81,7 @@ describe('cli help output', () => {
 
   test('compile with no args shows error', async () => {
     const proc = Bun.spawn(['bun', 'run', 'src/main.ts', 'compile'], {
-      cwd: '/Users/wess/Desktop/Dev/stim',
+      cwd: import.meta.dir + '/..',
       stderr: 'pipe',
     })
     const stderr = await new Response(proc.stderr).text()
