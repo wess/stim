@@ -1,113 +1,50 @@
 name: Release
 
 on:
-  workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version to release (e.g., 1.0.0)'
-        required: true
-        default: '1.0.0'
-      release_type:
-        description: 'Type of release'
-        required: true
-        default: 'patch'
-        type: choice
-        options:
-        - patch
-        - minor
-        - major
   push:
-    tags:
-      - 'v*'
+    branches: [main]
+    paths: ['package.json']
 
 permissions:
   contents: write
 
 jobs:
-  create-release:
-    name: Create Release and Tag
+  check-version:
+    name: Check Version Change
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch'
     outputs:
-      version: ${{ steps.version.outputs.version }}
-      tag: ${{ steps.version.outputs.tag }}
-    
+      version: ${{ steps.check.outputs.version }}
+      tag: ${{ steps.check.outputs.tag }}
+      changed: ${{ steps.check.outputs.changed }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          fetch-depth: 0
+          fetch-depth: 2
 
-      - name: Setup Git
+      - name: Check if version changed
+        id: check
         run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
+          CURRENT=$(grep '"version"' package.json | sed 's/.*"version": "\(.*\)".*/\1/')
+          PREVIOUS=$(git show HEAD~1:package.json 2>/dev/null | grep '"version"' | sed 's/.*"version": "\(.*\)".*/\1/' || echo "")
 
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: latest
+          echo "Current: $CURRENT"
+          echo "Previous: $PREVIOUS"
 
-      - name: Install dependencies
-        run: bun install
-
-      - name: Set version
-        id: version
-        run: |
-          if [ "${{ github.event.inputs.version }}" != "" ]; then
-            VERSION="${{ github.event.inputs.version }}"
+          if [ "$CURRENT" != "$PREVIOUS" ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "version=$CURRENT" >> $GITHUB_OUTPUT
+            echo "tag=v$CURRENT" >> $GITHUB_OUTPUT
           else
-            # Auto-bump version based on release_type
-            CURRENT_VERSION=$(grep '"version"' package.json | sed 's/.*"version": "\(.*\)".*/\1/')
-            echo "Current version: $CURRENT_VERSION"
-            
-            # Parse version parts
-            IFS='.' read -ra VERSION_PARTS <<< "$CURRENT_VERSION"
-            MAJOR=${VERSION_PARTS[0]}
-            MINOR=${VERSION_PARTS[1]}
-            PATCH=${VERSION_PARTS[2]}
-            
-            case "${{ github.event.inputs.release_type }}" in
-              "major")
-                MAJOR=$((MAJOR + 1))
-                MINOR=0
-                PATCH=0
-                ;;
-              "minor")
-                MINOR=$((MINOR + 1))
-                PATCH=0
-                ;;
-              "patch")
-                PATCH=$((PATCH + 1))
-                ;;
-            esac
-            
-            VERSION="$MAJOR.$MINOR.$PATCH"
+            echo "changed=false" >> $GITHUB_OUTPUT
           fi
-          
-          echo "New version: $VERSION"
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "tag=v$VERSION" >> $GITHUB_OUTPUT
-
-      - name: Update package.json version
-        run: |
-          sed -i.bak "s/\"version\": \".*\"/\"version\": \"${{ steps.version.outputs.version }}\"/" package.json
-          rm package.json.bak
-
-      - name: Commit version bump
-        run: |
-          git add package.json
-          git commit -m "Bump version to v${{ steps.version.outputs.version }}"
-          git tag "v${{ steps.version.outputs.version }}"
-          git push origin main
-          git push origin "v${{ steps.version.outputs.version }}"
 
   build:
     name: Build ${{ matrix.target }}
     runs-on: ${{ matrix.os }}
-    needs: [create-release]
-    if: always() && (needs.create-release.result == 'success' || github.event_name == 'push')
+    needs: [check-version]
+    if: needs.check-version.outputs.changed == 'true'
     strategy:
       matrix:
         include:
@@ -127,8 +64,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          ref: ${{ needs.create-release.outputs.tag || github.ref }}
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -137,6 +72,9 @@ jobs:
 
       - name: Install dependencies
         run: bun install
+
+      - name: Run tests
+        run: bun test
 
       - name: Build executable
         run: bun build --compile --target=bun-${{ matrix.target }} --outfile=${{ matrix.artifact }} src/main.ts
@@ -149,10 +87,9 @@ jobs:
 
   release:
     name: Create Release
-    needs: [create-release, build]
+    needs: [check-version, build]
     runs-on: ubuntu-latest
-    if: always() && (needs.create-release.result == 'success' || (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')))
-    
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -169,76 +106,25 @@ jobs:
           cp ./artifacts/stim-darwin-x64/stim-darwin-x64 ./release/
           cp ./artifacts/stim-darwin-arm64/stim-darwin-arm64 ./release/
           cp ./artifacts/stim-windows-x64.exe/stim-windows-x64.exe ./release/
-          
-          # Make binaries executable
+
           chmod +x ./release/stim-*
-          
-          # Create checksums
+
           cd ./release
           sha256sum * > checksums.txt
 
-      - name: Get version
-        id: version
+      - name: Create tag
         run: |
-          if [ "${{ needs.create-release.outputs.version }}" != "" ]; then
-            echo "VERSION=v${{ needs.create-release.outputs.version }}" >> $GITHUB_OUTPUT
-          else
-            echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-          fi
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git tag "${{ needs.check-version.outputs.tag }}"
+          git push origin "${{ needs.check-version.outputs.tag }}"
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          name: Stim ${{ steps.version.outputs.VERSION }}
-          tag_name: ${{ steps.version.outputs.VERSION }}
-          body: |
-            # Stim ${{ steps.version.outputs.VERSION }}
-            
-            ## 🚀 Installation
-            
-            Download the appropriate binary for your platform:
-            
-            ### Linux (x64)
-            ```bash
-            curl -L https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.VERSION }}/stim-linux-x64 -o stim
-            chmod +x stim
-            sudo mv stim /usr/local/bin/
-            ```
-            
-            ### macOS (Intel)
-            ```bash
-            curl -L https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.VERSION }}/stim-darwin-x64 -o stim
-            chmod +x stim
-            sudo mv stim /usr/local/bin/
-            ```
-            
-            ### macOS (Apple Silicon)
-            ```bash
-            curl -L https://github.com/${{ github.repository }}/releases/download/${{ steps.version.outputs.VERSION }}/stim-darwin-arm64 -o stim
-            chmod +x stim
-            sudo mv stim /usr/local/bin/
-            ```
-            
-            ### Windows (x64)
-            Download `stim-windows-x64.exe` and add it to your PATH.
-            
-            ## ✅ Verify Installation
-            ```bash
-            stim version
-            ```
-            
-            ## 📖 Usage
-            ```bash
-            # Compile a .stim file to Claude command
-            stim compile your-command.stim
-            
-            # Show help
-            stim help
-            ```
-            
-            ## 🔐 Checksums
-            See `checksums.txt` for SHA256 hashes of all binaries.
-            
+          name: Stim ${{ needs.check-version.outputs.tag }}
+          tag_name: ${{ needs.check-version.outputs.tag }}
+          generate_release_notes: true
           files: |
             ./release/stim-linux-x64
             ./release/stim-darwin-x64
