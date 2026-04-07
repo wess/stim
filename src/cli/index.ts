@@ -32,6 +32,9 @@ const showHelp = (version: string) => {
   console.log('  version                                    Show version information')
   console.log('  help                                       Show this help')
   console.log('')
+  console.log('Flags:')
+  console.log('  --lsp                                      Start the LSP server (stdio)')
+  console.log('')
   console.log('Examples:')
   console.log('  stim compile brainstorm.stim')
   console.log('  stim install brainstorm.stim')
@@ -48,6 +51,14 @@ const showHelp = (version: string) => {
 
 export const main = () => {
   const args = process.argv.slice(2)
+
+  if (args.includes('--lsp')) {
+    import('../../lsp/index').catch((err) => {
+      console.error('Failed to start LSP server:', err.message)
+      process.exit(1)
+    })
+    return
+  }
 
   if (args.length === 0) {
     showHelp(getVersion())
