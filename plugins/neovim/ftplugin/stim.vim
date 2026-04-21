@@ -34,6 +34,7 @@ setlocal matchpairs+=<:>
 nnoremap <buffer> <leader>sc :StimCompile<CR>
 nnoremap <buffer> <leader>sr :StimCompileAndRun<CR>
 nnoremap <buffer> <leader>sn :StimNewCommand<CR>
+nnoremap <buffer> <leader>sa :StimNewAgent<CR>
 
 " Text objects for command blocks
 vnoremap <buffer> ic :<C-u>call <SID>SelectCommandBlock('i')<CR>
@@ -43,6 +44,7 @@ onoremap <buffer> ac :<C-u>call <SID>SelectCommandBlock('a')<CR>
 
 " Stim-specific abbreviations
 iabbrev <buffer> cmd command
+iabbrev <buffer> agt agent
 iabbrev <buffer> conf confirm
 iabbrev <buffer> resp wait_for_response()
 
@@ -72,8 +74,8 @@ endfunction
 
 " Text object function for command blocks
 function! s:SelectCommandBlock(mode)
-  " Find the start of the command block
-  let start_line = search('command\s\+\w\+\s*{', 'bnW')
+  " Find the start of the command or agent block
+  let start_line = search('\<\(command\|agent\)\s\+\w\+\s*{', 'bnW')
   if start_line == 0
     return
   endif
@@ -112,16 +114,19 @@ function! StimComplete(findstart, base)
     let completions = []
     
     " Keywords
-    let keywords = ['command', 'if', 'else', 'while', 'for', 'in', 'break', 'true', 'false', 'task', 'parallel']
+    let keywords = ['command', 'agent', 'if', 'else', 'while', 'for', 'in', 'break', 'true', 'false', 'task', 'parallel']
+
+    " Metadata keywords
+    let metadata = ['description', 'tools', 'model']
 
     " Agent types
     let agents = ['bash', 'explore', 'plan', 'general']
 
     " Built-in functions
     let functions = ['ask', 'confirm', 'wait_for_response', 'create_file', 'git_init', 'git_commit', 'git_push', 'github_create_repo']
-    
+
     " Filter based on input
-    for word in keywords + agents + functions
+    for word in keywords + metadata + agents + functions
       if word =~ '^' . a:base
         call add(completions, word)
       endif

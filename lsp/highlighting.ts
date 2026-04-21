@@ -40,7 +40,7 @@ const MOD = {
 } as const
 
 const KEYWORDS = new Set([
-  'command', 'if', 'else', 'while', 'for', 'in',
+  'command', 'agent', 'if', 'else', 'while', 'for', 'in',
   'task', 'parallel', 'break', 'import', 'true', 'false',
 ])
 
@@ -49,6 +49,8 @@ const BUILTINS = new Set([
 ])
 
 const AGENT_TYPES = new Set(['bash', 'explore', 'plan', 'general'])
+
+const METADATA_KEYS = new Set(['description', 'tools', 'model'])
 
 export const provideSemanticTokens = (doc: TextDocument, builder: SemanticTokensBuilder): void => {
   const text = doc.getText()
@@ -78,12 +80,36 @@ export const provideSemanticTokens = (doc: TextDocument, builder: SemanticTokens
       continue
     }
 
-    // Command declaration
-    const commandMatch = trimmed.match(/^command\s+(\w+)\s*\{$/)
-    if (commandMatch) {
-      builder.push(i, indent, 7, TOKEN.keyword, 0)
-      const nameStart = line.indexOf(commandMatch[1])
-      builder.push(i, nameStart, commandMatch[1].length, TOKEN.function, MOD.declaration)
+    // Command / agent declaration
+    const declMatch = trimmed.match(/^(command|agent)\s+(\w+)\s*\{$/)
+    if (declMatch) {
+      builder.push(i, indent, declMatch[1].length, TOKEN.keyword, 0)
+      const nameStart = line.indexOf(declMatch[2], indent + declMatch[1].length)
+      builder.push(i, nameStart, declMatch[2].length, TOKEN.function, MOD.declaration)
+      continue
+    }
+
+    // Agent metadata: description "...", tools [...], model "..."
+    const metadataMatch = trimmed.match(/^(description|tools|model)\s+(.+)$/)
+    if (metadataMatch && METADATA_KEYS.has(metadataMatch[1])) {
+      builder.push(i, indent, metadataMatch[1].length, TOKEN.decorator, 0)
+      const rest = metadataMatch[2]
+      if (rest.startsWith('[') && rest.endsWith(']')) {
+        const arrStart = line.indexOf('[', indent + metadataMatch[1].length)
+        const inner = rest.slice(1, -1)
+        const identifiers = inner.matchAll(/[a-zA-Z_]\w*/g)
+        for (const id of identifiers) {
+          builder.push(i, arrStart + 1 + id.index!, id[0].length, TOKEN.type, 0)
+        }
+      } else {
+        highlightStrings(line, i, builder)
+      }
+      continue
+    }
+
+    // Prose: bare string literal on its own line
+    if ((trimmed.startsWith('"') && trimmed.endsWith('"')) || (trimmed.startsWith("'") && trimmed.endsWith("'"))) {
+      builder.push(i, indent, trimmed.length, TOKEN.comment, 0)
       continue
     }
 

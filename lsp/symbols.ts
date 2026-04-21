@@ -6,28 +6,42 @@ export const getDocumentSymbols = (doc: TextDocument): DocumentSymbol[] => {
   const lines = text.split('\n')
   const symbols: DocumentSymbol[] = []
 
-  let commandSymbol: DocumentSymbol | null = null
+  let rootSymbol: DocumentSymbol | null = null
 
   for (let i = 0; i < lines.length; i++) {
     const trimmed = lines[i].trim()
     const lineLen = lines[i].length
 
-    // Command declaration
-    const commandMatch = trimmed.match(/^command\s+(\w+)\s*\{$/)
-    if (commandMatch) {
+    // Command / agent declaration
+    const declMatch = trimmed.match(/^(command|agent)\s+(\w+)\s*\{$/)
+    if (declMatch) {
       const endLine = findClosingBrace(lines, i)
-      commandSymbol = {
-        name: commandMatch[1],
+      rootSymbol = {
+        name: declMatch[2],
+        detail: declMatch[1],
         kind: SymbolKind.Module,
         range: Range.create(i, 0, endLine, lines[endLine]?.length ?? 0),
         selectionRange: Range.create(i, 0, i, lineLen),
         children: [],
       }
-      symbols.push(commandSymbol)
+      symbols.push(rootSymbol)
       continue
     }
 
-    const container = commandSymbol?.children ?? symbols
+    const container = rootSymbol?.children ?? symbols
+
+    // Agent metadata
+    const metadataMatch = trimmed.match(/^(description|tools|model)\s+(.+)$/)
+    if (metadataMatch) {
+      container.push({
+        name: metadataMatch[1],
+        detail: truncate(metadataMatch[2], 40),
+        kind: SymbolKind.Property,
+        range: Range.create(i, 0, i, lineLen),
+        selectionRange: Range.create(i, 0, i, lineLen),
+      })
+      continue
+    }
 
     // Variable assignment
     const assignMatch = trimmed.match(/^(\w+)\s*=\s*(.+)$/)

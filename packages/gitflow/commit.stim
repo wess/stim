@@ -1,0 +1,14 @@
+command commit {
+  ask("Run `git status` and `git diff --staged`. If nothing is staged, run `git diff` and tell the user they need to stage files first.")
+  wait_for_response()
+
+  ask("Identify: (1) what kind of change this is (feat, fix, docs, style, refactor, test, chore, perf); (2) the narrowest scope that covers it (e.g. the module or feature name); (3) the *why* of the change, not the *what* — the diff already shows the what.")
+  wait_for_response()
+
+  ask("Draft the commit message in conventional-commit format: `<type>(<scope>): <short summary>`. Summary under 72 chars, imperative mood, no trailing period. Include an optional body explaining the why if the summary doesn't cover it.")
+  wait_for_response()
+
+  if (confirm("Use this commit message?")) {
+    ask("Run `git commit` with the approved message using a HEREDOC for correct formatting.")
+  }
+}

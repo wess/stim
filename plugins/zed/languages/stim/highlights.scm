@@ -1,6 +1,7 @@
 ; Keywords
 [
   "command"
+  "agent"
   "if"
   "else"
   "while"
@@ -10,6 +11,13 @@
   "task"
   "parallel"
 ] @keyword
+
+; Agent metadata keywords
+[
+  "description"
+  "tools"
+  "model"
+] @attribute
 
 ; Agent types
 [
@@ -77,6 +85,17 @@
 ; Command name
 (command_declaration
   name: (identifier) @function.definition)
+
+; Agent name
+(agent_declaration
+  name: (identifier) @function.definition)
+
+; Tools list identifiers
+(tools_field
+  (identifier) @type)
+
+; Prose strings
+(prose_statement (string) @string.special)
 
 ; Task description
 (task_statement

@@ -3,7 +3,8 @@ import { TextDocument } from 'vscode-languageserver-textdocument'
 import type { Position } from 'vscode-languageserver/node'
 
 const KEYWORD_DOCS: Record<string, string> = {
-  command: '**command** `<name> { ... }`\n\nDeclares a Stim command. Every `.stim` file must contain exactly one command block.',
+  command: '**command** `<name> { ... }`\n\nDeclares a Stim command. Every `.stim` file must contain exactly one top-level declaration.',
+  agent: '**agent** `<name> { ... }`\n\nDeclares a Stim agent. Agents support `description`, `tools`, `model` metadata followed by prose instructions.',
   task: '**task** `[agent] "<description>" { ... }`\n\nSpawns a subagent task. Agent types: `general`, `bash`, `explore`, `plan`.\n\nCan also reference a file: `task("file.stim")`',
   parallel: '**parallel** `{ ... }`\n\nExecutes multiple tasks concurrently. May only contain `task` statements.',
   if: '**if** `(condition) { ... }`\n\nConditional execution. Supports `else` blocks.',
@@ -22,6 +23,12 @@ const FUNCTION_DOCS: Record<string, string> = {
   confirm: '**confirm** `(message)`\n\nDisplays a yes/no confirmation dialog. Returns a boolean.',
   wait_for_response: '**wait_for_response** `()`\n\nPauses execution until the user responds.',
   create_file: '**create_file** `(filename, content)`\n\nCreates a file with the given name and content.',
+}
+
+const METADATA_DOCS: Record<string, string> = {
+  description: '**description** `"<string>"`\n\nShort description of what the agent does. Agent-body metadata.',
+  tools: '**tools** `[Tool1, Tool2, ...]`\n\nArray of tools the agent may invoke (bare identifiers). Agent-body metadata.',
+  model: '**model** `"<string>"`\n\nModel name for the agent (e.g. `"sonnet"`). Agent-body metadata.',
 }
 
 const ANNOTATION_DOCS: Record<string, string> = {
@@ -66,6 +73,11 @@ export const getHover = (doc: TextDocument, position: Position): Hover | null =>
   // Keyword hover
   if (KEYWORD_DOCS[word]) {
     return { contents: { kind: MarkupKind.Markdown, value: KEYWORD_DOCS[word] } }
+  }
+
+  // Agent metadata hover — only when the word is at the start of its line
+  if (METADATA_DOCS[word] && line.trimStart().startsWith(word + ' ')) {
+    return { contents: { kind: MarkupKind.Markdown, value: METADATA_DOCS[word] } }
   }
 
   // Function hover

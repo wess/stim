@@ -1,6 +1,6 @@
 # Commands
 
-A Stim file contains exactly one command declaration that defines a Claude Code command.
+A Stim file contains exactly one top-level declaration — either a `command` or an [`agent`](agents.md). A `command` is the interactive form: the user invokes it (as `/name` in Claude Code), it asks questions, branches on answers, spawns tasks.
 
 ## Syntax
 
@@ -10,7 +10,7 @@ command name {
 }
 ```
 
-Every `.stim` file must start with a `command` declaration (after any [imports](imports.md) or [annotations](annotations.md)).
+Every `.stim` file must start with a `command` declaration (after any [imports](imports.md) or [annotations](annotations.md)), or with an [`agent`](agents.md) declaration if you're writing a persona instead.
 
 ## Command Names
 
@@ -70,9 +70,9 @@ command deploy {
 Ask the user: "Which environment?"
 ```
 
-## One Command Per File
+## One Declaration Per File
 
-Each `.stim` file must contain exactly one command. To reference other `.stim` files, use [file reference tasks](tasks.md#file-reference-task).
+Each `.stim` file must contain exactly one top-level declaration (command or agent). To reference other `.stim` files, use [file reference tasks](tasks.md#file-reference-task) or [imports](imports.md).
 
 ```stim
 // valid: one command
@@ -81,16 +81,10 @@ command main {
 }
 ```
 
-```stim
-// invalid: two commands
-command first { }
-command second { }
-// Error: Multiple commands not allowed
-```
-
 ## See Also
 
+- [Agents](agents.md) — The other kind of declaration, for static personas
 - [Variables](variables.md) — Declare variables in command body
-- [Imports](imports.md) — Import shared variables before command
-- [Annotations](annotations.md) — Add workflow annotations after command keyword
-- [Tasks](tasks.md) — Spawn subagent tasks from command
+- [Imports](imports.md) — Import shared variables before the declaration
+- [Annotations](annotations.md) — Add workflow annotations after the command keyword
+- [Tasks](tasks.md) — Spawn subagent tasks from a command

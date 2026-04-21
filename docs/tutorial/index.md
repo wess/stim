@@ -1,6 +1,6 @@
 # The Stim Tutorial
 
-Welcome to Stim. Over the next ten chapters, you'll learn to build sophisticated Claude Code workflows using a clean, readable syntax. Whether you're brand new to programming or an experienced developer, this tutorial will guide you through everything from your first command to multi-agent orchestration.
+Welcome to Stim. Over the next thirteen chapters, you'll learn to build sophisticated AI prompts — commands, agents, and rules — using a clean, readable syntax that compiles for multiple AI tools, plus how to share your work as packages. Whether you're brand new to programming or an experienced developer, this tutorial will guide you through everything from your first command to multi-agent orchestration.
 
 By the end, you'll understand how to write complex automation that would be impossible to maintain by hand, and you'll have the confidence to build your own workflows.
 
@@ -22,9 +22,15 @@ By the end, you'll understand how to write complex automation that would be impo
 
 8. **[Imports and Reusability](imports.md)** — Import system, shared libraries, and file references. Build modular, maintainable commands.
 
-9. **[The Stim Engine](engine.md)** — Annotations, topologies, memory management, and orchestration. Advanced concepts for production workflows.
+9. **[Writing Agents](agents.md)** — Declare agents with metadata and prose. Understand when to use an agent versus a command.
 
-10. **[Best Practices](bestpractices.md)** — Patterns, tips, common pitfalls, and real-world advice from the community.
+10. **[Targets](targets.md)** — Compile for Claude Code, ChatGPT, or Cursor. Understand what changes across tools and what stays the same.
+
+11. **[Packages](packages.md)** — Install third-party packages, publish your own, organize monorepo packages.
+
+12. **[The Stim Engine](engine.md)** — Annotations, topologies, memory management, and orchestration. Advanced concepts for production workflows.
+
+13. **[Best Practices](bestpractices.md)** — Patterns, tips, common pitfalls, and real-world advice from the community.
 
 ## How to Use This Tutorial
 

@@ -1,0 +1,8 @@
+name: gitflow
+version: 1.0.0
+author: stim
+description: Git workflow commands — semantic commits, PR descriptions, changelogs
+commands:
+  - commit.stim
+  - pr.stim
+  - changelog.stim

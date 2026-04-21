@@ -1,0 +1,14 @@
+command pr {
+  ask("Show `git log --oneline origin/main..HEAD` and `git diff origin/main...HEAD --stat`. If the branch hasn't been pushed yet, say so and offer to push first.")
+  wait_for_response()
+
+  ask("Read ALL commits on the branch, not just the latest. Summarize what the PR does at a level a reviewer would want: the problem it solves, the shape of the change, and any tradeoffs or risks worth calling out. 2-4 sentences of prose, then a tight bullet list of notable changes.")
+  wait_for_response()
+
+  ask("Write a test plan: the specific things a reviewer should verify, with commands or steps where possible. Not vague 'test the feature' — concrete steps like 'run `bun test` and confirm 0 failures, then try X and Y'.")
+  wait_for_response()
+
+  if (confirm("Open the PR with this description?")) {
+    ask("Run `gh pr create` with the title under 70 chars (short summary, details go in the body) and the description above passed via HEREDOC. Return the PR URL when done.")
+  }
+}

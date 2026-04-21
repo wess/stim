@@ -1,20 +1,35 @@
 import { describe, test, expect, mock, beforeEach, afterEach } from 'bun:test'
-import { parseSource, resolveTag, fetchManifest, fetchStimFile } from '../src/registry/index.js'
+import { parseSource, sourceKey, resolveTag, fetchManifest, fetchStimFile } from '../src/registry/index.js'
 
 describe('parseSource', () => {
   test('parses github/user/repo', () => {
     const result = parseSource('github/wess/brainstorm')
-    expect(result).toEqual({ owner: 'wess', repo: 'brainstorm', tag: null })
+    expect(result).toEqual({ owner: 'wess', repo: 'brainstorm', subpath: null, tag: null })
   })
 
   test('parses github/user/repo@tag', () => {
     const result = parseSource('github/wess/brainstorm@v1.0.0')
-    expect(result).toEqual({ owner: 'wess', repo: 'brainstorm', tag: 'v1.0.0' })
+    expect(result).toEqual({ owner: 'wess', repo: 'brainstorm', subpath: null, tag: 'v1.0.0' })
   })
 
   test('parses tag with complex semver', () => {
     const result = parseSource('github/user/repo@v2.3.4-beta.1')
-    expect(result).toEqual({ owner: 'user', repo: 'repo', tag: 'v2.3.4-beta.1' })
+    expect(result).toEqual({ owner: 'user', repo: 'repo', subpath: null, tag: 'v2.3.4-beta.1' })
+  })
+
+  test('parses github/user/repo/subpath', () => {
+    const result = parseSource('github/wess/stim/packages/reviews')
+    expect(result).toEqual({ owner: 'wess', repo: 'stim', subpath: 'packages/reviews', tag: null })
+  })
+
+  test('parses github/user/repo/subpath@tag', () => {
+    const result = parseSource('github/wess/stim/packages/reviews@v1.0.0')
+    expect(result).toEqual({ owner: 'wess', repo: 'stim', subpath: 'packages/reviews', tag: 'v1.0.0' })
+  })
+
+  test('strips trailing slash from subpath', () => {
+    const result = parseSource('github/wess/stim/packages/reviews/')
+    expect(result.subpath).toBe('packages/reviews')
   })
 
   test('throws on missing github prefix', () => {
@@ -29,16 +44,26 @@ describe('parseSource', () => {
     expect(() => parseSource('github/wess')).toThrow('Invalid package source')
   })
 
-  test('throws on extra slashes', () => {
-    expect(() => parseSource('github/wess/brainstorm/extra')).toThrow('Invalid package source')
-  })
-
   test('throws on npm-style source', () => {
     expect(() => parseSource('npm/brainstorm')).toThrow('Invalid package source')
   })
 
   test('error message includes expected format', () => {
-    expect(() => parseSource('bad')).toThrow('Expected format: github/<user>/<repo>[@tag]')
+    expect(() => parseSource('bad')).toThrow('Expected format: github/<user>/<repo>[/<subpath>][@tag]')
+  })
+})
+
+describe('sourceKey', () => {
+  test('returns github/owner/repo without subpath', () => {
+    expect(sourceKey({ owner: 'w', repo: 'r', subpath: null, tag: null })).toBe('github/w/r')
+  })
+
+  test('includes subpath when present', () => {
+    expect(sourceKey({ owner: 'w', repo: 'r', subpath: 'packages/reviews', tag: null })).toBe('github/w/r/packages/reviews')
+  })
+
+  test('ignores tag', () => {
+    expect(sourceKey({ owner: 'w', repo: 'r', subpath: null, tag: 'v1.0.0' })).toBe('github/w/r')
   })
 })
 
@@ -134,28 +159,56 @@ describe('fetchManifest', () => {
     globalThis.fetch = originalFetch
   })
 
-  test('fetches and parses stim.json', async () => {
+  test('fetches and parses stim.yaml (primary)', async () => {
+    const yamlBody = `name: brainstorm
+version: 1.0.0
+author: wess
+commands:
+  - brainstorm.stim`
+
+    const calls: string[] = []
+    globalThis.fetch = (async (url: string) => {
+      calls.push(url)
+      if (url.endsWith('/stim.yaml')) {
+        return new Response(yamlBody, { status: 200 })
+      }
+      return new Response('', { status: 404 })
+    }) as any
+
+    const result = await fetchManifest('wess', 'brainstorm', 'v1.0.0')
+    expect(calls).toContain('https://raw.githubusercontent.com/wess/brainstorm/v1.0.0/stim.yaml')
+    expect(result).toEqual({
+      name: 'brainstorm',
+      version: '1.0.0',
+      author: 'wess',
+      commands: ['brainstorm.stim'],
+    })
+  })
+
+  test('falls back to stim.json when stim.yaml is missing', async () => {
     const manifest = { name: 'brainstorm', version: '1.0.0', author: 'wess', commands: ['brainstorm.stim'] }
 
     globalThis.fetch = (async (url: string) => {
-      expect(url).toBe('https://raw.githubusercontent.com/wess/brainstorm/v1.0.0/stim.json')
-      return new Response(JSON.stringify(manifest), { status: 200 })
+      if (url.endsWith('/stim.yaml')) return new Response('', { status: 404 })
+      if (url.endsWith('/stim.json')) return new Response(JSON.stringify(manifest), { status: 200 })
+      return new Response('', { status: 404 })
     }) as any
 
     const result = await fetchManifest('wess', 'brainstorm', 'v1.0.0')
     expect(result).toEqual(manifest)
   })
 
-  test('throws on 404', async () => {
+  test('throws when neither stim.yaml nor stim.json exists', async () => {
     globalThis.fetch = (async () => {
       return new Response('', { status: 404 })
     }) as any
 
-    expect(fetchManifest('wess', 'brainstorm', 'v1.0.0')).rejects.toThrow('Failed to fetch stim.json')
+    expect(fetchManifest('wess', 'brainstorm', 'v1.0.0')).rejects.toThrow('Failed to fetch stim.yaml or stim.json')
   })
 
-  test('error includes status code', async () => {
-    globalThis.fetch = (async () => {
+  test('error includes status code from json fallback', async () => {
+    globalThis.fetch = (async (url: string) => {
+      if (url.endsWith('/stim.yaml')) return new Response('', { status: 404 })
       return new Response('', { status: 500 })
     }) as any
 

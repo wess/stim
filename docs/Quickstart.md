@@ -1,10 +1,10 @@
 # Quickstart Guide
 
-Get up and running with Stim in 5 minutes.
+Get up and running with Stim in 5 minutes. You'll build a command, an agent, and try compiling for multiple AI tools.
 
 ## Prerequisites
 
-- [Claude Code](https://claude.ai/code) setup
+- An AI tool where you'll deploy the output — [Claude Code](https://claude.ai/code), [Cursor](https://cursor.com), or a ChatGPT Custom GPT
 - Basic familiarity with command-line tools
 
 ## Step 1: Installation
@@ -134,6 +134,70 @@ command full_scan {
   }
 }
 ```
+
+## Step 7: Build an Agent
+
+Commands are interactive — the user invokes them. Agents are personas — the AI tool invokes them.
+
+```stim
+agent reviewer {
+  description "Reviews code for security and correctness"
+  tools [Read, Grep, Bash]
+  model "sonnet"
+
+  "You are a senior code reviewer."
+  "When reviewing code, cite specific files and line numbers."
+  "Prioritize findings by severity: must change, should change, could improve."
+}
+```
+
+Install it:
+
+```bash
+stim install reviewer.stim
+# → ~/.claude/agents/reviewer.md
+```
+
+In Claude Code: type `@reviewer` to invoke.
+
+## Step 8: Target a Different Tool
+
+The same `.stim` source compiles for other AI tools.
+
+**Cursor:**
+```bash
+stim install reviewer.stim --target cursor
+# → .cursor/rules/reviewer.mdc
+```
+
+**ChatGPT Custom GPT:**
+```bash
+stim compile reviewer.stim --target chatgpt
+# → dist/chatgpt/reviewer.md
+# Paste the contents into your Custom GPT's Instructions field.
+```
+
+Target-specific fields (`tools`, `model`) are dropped with a warning when a target doesn't support them. The same source stays portable.
+
+## Step 9: Install a Package
+
+Stim has pre-built packages you can install in one command. Try the review agents:
+
+```bash
+stim add github/wess/stim/packages/reviews
+```
+
+This installs three agents — `@security_reviewer`, `@code_reviewer`, `@docs_reviewer` — into `~/.claude/agents/`. Invoke them in Claude Code as `@security_reviewer`, etc.
+
+Other first-party packages:
+
+```bash
+stim add github/wess/stim/packages/gitflow    # /commit, /pr, /changelog
+stim add github/wess/stim/packages/planning   # /spec, /breakdown, /scope
+stim add github/wess/stim/packages/writing    # @readme_writer, @docstring_writer, @explainer
+```
+
+Browse the full [package registry](../packages.md) for more, and see [docs/api/packages.md](api/packages.md) to publish your own.
 
 ## What's Next?
 

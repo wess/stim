@@ -1,0 +1,24 @@
+command scope {
+  ask("Describe what you're about to build. If there's a SPEC.md or issue, reference it.")
+  wait_for_response()
+
+  ask("Read the current state of the code that would be affected. Actually read it — not just file names, the contents of the files you'd modify.")
+  wait_for_response()
+
+  ask("List the changes you'd make to implement this. Files created, files modified, new dependencies, new tests. Keep it to bullets, no prose.")
+  wait_for_response()
+
+  questions = ["Which changes are strictly required vs cleanup you noticed along the way", "If you could ship in half the time with half the scope, what would you cut", "What part of this scope touches code you didn't write and don't fully understand", "Is there anyone else who should weigh in before this gets built"]
+
+  for q in questions {
+    ask(q)
+    wait_for_response()
+  }
+
+  ask("Based on those answers, write a final scope statement: what's in, what's out, what's deferred. Be ruthless about cuts. Scope is always too big on the first pass.")
+  wait_for_response()
+
+  if (confirm("Save this as SCOPE.md?")) {
+    create_file("SCOPE.md", "scope_statement")
+  }
+}

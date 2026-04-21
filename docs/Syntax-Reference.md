@@ -4,22 +4,29 @@ Everything you can write in a `.stim` file, with examples.
 
 ## Table of Contents
 
-1. [Commands](#commands)
-2. [Variables](#variables)
-3. [Data Types](#data-types)
-4. [Operators](#operators)
-5. [Control Flow](#control-flow)
-6. [Tasks](#tasks)
-7. [Parallel](#parallel)
-8. [Functions](#functions)
-9. [Comments](#comments)
-10. [Naming Rules](#naming-rules)
-11. [Keywords](#keywords)
-12. [Common Errors](#common-errors)
+1. [Declarations](#declarations)
+2. [Agent Metadata](#agent-metadata)
+3. [Prose](#prose)
+4. [Variables](#variables)
+5. [Data Types](#data-types)
+6. [Operators](#operators)
+7. [Control Flow](#control-flow)
+8. [Tasks](#tasks)
+9. [Parallel](#parallel)
+10. [Functions](#functions)
+11. [Comments](#comments)
+12. [Naming Rules](#naming-rules)
+13. [Keywords](#keywords)
+14. [Targets](#targets)
+15. [Common Errors](#common-errors)
 
-## Commands
+## Declarations
 
-Every `.stim` file contains one command. The name becomes the slash command in Claude Code.
+Every `.stim` file contains exactly one **declaration**, which is either a `command` or an `agent`.
+
+### Command
+
+Interactive workflow invoked by the user (as `/name` in Claude Code).
 
 ```stim
 command deploy {
@@ -28,7 +35,54 @@ command deploy {
 }
 ```
 
-This compiles to `deploy.md` and is used as `/deploy`.
+### Agent
+
+Persona with metadata invoked by the AI tool (as `@name` in Claude Code).
+
+```stim
+agent reviewer {
+  description "Reviews pull requests"
+  tools [Read, Grep, Bash]
+  model "sonnet"
+
+  "You are a code reviewer."
+  "Cite file paths and line numbers."
+}
+```
+
+Name rules are the same for both: letters, numbers, underscores; no leading digit.
+
+## Agent Metadata
+
+Only valid inside `agent` declarations. Must appear before any prose or other statements.
+
+```stim
+agent x {
+  description "..."     // string, one line
+  tools [A, B, C]       // array of identifiers
+  model "..."           // string
+  // prose / control flow / etc. below
+}
+```
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `description` | string | Used by every target's frontmatter or heading. |
+| `tools` | array | Claude-specific. Other targets warn-and-drop. |
+| `model` | string | Claude-specific. Other targets warn-and-drop. |
+
+Each field may appear at most once. Metadata in a `command` declaration is a parse error.
+
+## Prose
+
+Bare string literals on a line become prose statements. Used mostly in agent bodies to build the system prompt.
+
+```stim
+"You are a technical writer."
+"Lead with the shape before mechanics."
+```
+
+Each line compiles to one paragraph in the output. Prose can appear anywhere the parser expects a statement, including inside control flow blocks.
 
 ## Variables
 
@@ -356,23 +410,53 @@ my var       // spaces not allowed
 
 ## Keywords
 
-These are reserved and cannot be used as variable or command names:
+These are reserved and cannot be used as variable, command, or agent names:
 
 ```
-command   if        else      for       in        while
+command   agent     if        else      for       in        while
 break     true      false     task      parallel
 bash      explore   plan      general
+description   tools   model   import
 ```
 
-Built-in function names (`ask`, `confirm`, `create_file`, `wait_for_response`) are also reserved.
+Built-in function names (`ask`, `confirm`, `create_file`, `wait_for_response`) are also reserved. Metadata keywords (`description`, `tools`, `model`) are only reserved inside agent declarations; they can be used as variable names elsewhere, but doing so is strongly discouraged.
+
+## Targets
+
+A declaration can be compiled for multiple AI tools. Pick one with `--target <name>` on `compile` or `install`. The default is `claude`.
+
+```bash
+stim compile reviewer.stim --target cursor
+stim install reviewer.stim --target chatgpt --local
+```
+
+| Target | Output | Install location (global) | Install location (`--local`) |
+|--------|--------|--------------------------|-----------------------------|
+| `claude` | `.md` | `~/.claude/{commands,agents}/` | `./.claude/{commands,agents}/` |
+| `cursor` | `.mdc` | N/A (always project) | `./.cursor/rules/` |
+| `chatgpt` | `.md` | `./dist/chatgpt/` | `./prompts/` |
+
+When a target doesn't support a metadata field (Cursor with `tools`, for instance), it logs a warning and emits without the field. See [Targets](api/targets.md) for details.
 
 ## Common Errors
 
-**Missing command declaration:**
+**Missing declaration:**
 ```
-Error: Expected command declaration: command <name> {
+Error: Expected declaration: command <name> { or agent <name> {
 ```
-Every file must start with `command name {`.
+Every file must start with `command name {` or `agent name {` (after any imports).
+
+**Metadata in a command:**
+```
+Error: Metadata field "description" is only allowed in agent declarations
+```
+Move the field into an `agent` block, or delete it if the declarator should stay as `command`.
+
+**Metadata out of order:**
+```
+Error: Metadata fields must appear before other statements
+```
+Move `description`/`tools`/`model` to the top of the agent body, above any prose or control flow.
 
 **Unclosed string:**
 ```

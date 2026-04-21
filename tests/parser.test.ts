@@ -13,11 +13,11 @@ describe('parseCommand', () => {
   })
 
   test('throws on missing command declaration', () => {
-    expect(() => parseCommand('hello {')).toThrow('Expected command declaration')
+    expect(() => parseCommand('hello {')).toThrow('Expected declaration')
   })
 
   test('throws on malformed command line', () => {
-    expect(() => parseCommand('command {')).toThrow('Expected command declaration')
+    expect(() => parseCommand('command {')).toThrow('Expected declaration')
   })
 })
 

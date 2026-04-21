@@ -1,41 +1,42 @@
 import { unlinkSync, existsSync } from 'fs'
-import { resolve } from 'path'
+import { resolve, dirname, basename } from 'path'
 import { readLock, writeLock } from '../lockfile/index.js'
-import { parseSource } from '../registry/index.js'
+import { parseSource, sourceKey } from '../registry/index.js'
+import { getTarget, extractTarget } from '../targets/index.js'
 
-const resolveGlobalDir = () => {
-  const homeDir = process.env.HOME || process.env.USERPROFILE
-  if (!homeDir) {
-    console.error('Error: Could not determine home directory')
-    process.exit(1)
+const lockDirFor = (targetName: string, local: boolean): string => {
+  if (targetName === 'claude') {
+    const home = process.env.HOME || process.env.USERPROFILE
+    if (!home) throw new Error('Could not determine home directory')
+    return local ? resolve(process.cwd(), '.claude') : resolve(home, '.claude')
   }
-  return resolve(homeDir!, '.claude')
+  return resolve(process.cwd(), `.${targetName}`)
 }
 
 export const handleRemove = (args: string[]) => {
-  const local = args.includes('--local')
-  const sources = args.filter(a => !a.startsWith('--'))
+  const { target: targetName, rest } = extractTarget(args)
+  const local = rest.includes('--local')
+  const sources = rest.filter(a => !a.startsWith('--'))
 
   if (sources.length === 0) {
     console.error('Error: No package source specified')
-    console.error('Usage: stim remove <github/user/repo> [--local]')
+    console.error('Usage: stim remove <github/user/repo[/subpath]> [--target <name>] [--local]')
     process.exit(1)
   }
 
+  const target = getTarget(targetName)
+
   for (const source of sources) {
-    removePackage(source, local)
+    removePackage(source, local, target)
   }
 }
 
-const removePackage = (source: string, local: boolean) => {
+const removePackage = (source: string, local: boolean, target: ReturnType<typeof getTarget>) => {
   try {
-    const { owner, repo } = parseSource(source)
-    const key = `github/${owner}/${repo}`
+    const parsed = parseSource(source)
+    const key = sourceKey(parsed)
 
-    const baseDir = local
-      ? resolve(process.cwd(), '.claude')
-      : resolveGlobalDir()
-
+    const baseDir = lockDirFor(target.name, local)
     const lock = readLock(baseDir)
 
     if (!lock.packages[key]) {
@@ -44,19 +45,23 @@ const removePackage = (source: string, local: boolean) => {
     }
 
     const entry = lock.packages[key]
-    const commandsDir = resolve(baseDir, 'commands')
+    let removed = 0
 
     for (const name of entry.commands) {
-      const filePath = resolve(commandsDir, `${name}.md`)
-      if (existsSync(filePath)) {
-        unlinkSync(filePath)
+      for (const kind of ['command', 'agent'] as const) {
+        const decl = { kind, name, body: [] }
+        const { path } = target.destination(decl, { local })
+        if (existsSync(path)) {
+          unlinkSync(path)
+          removed++
+        }
       }
     }
 
     delete lock.packages[key]
     writeLock(baseDir, lock)
 
-    console.log(`✓ Removed ${key} (${entry.commands.length} commands)`)
+    console.log(`✓ Removed ${key} (${removed} files, ${target.name})`)
   } catch (error) {
     console.error('Remove error:', (error as Error).message)
     process.exit(1)

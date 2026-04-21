@@ -4,49 +4,128 @@ Complete reference for Stim syntax, functions, and features.
 
 ## Table of Contents
 
-1. [Command Structure](#command-structure)
-2. [Variables](#variables)
-3. [Control Flow](#control-flow)
-4. [Built-in Functions](#built-in-functions)
-5. [Tasks and Parallelism](#tasks-and-parallelism)
-6. [Operators](#operators)
-7. [Comments](#comments)
-8. [Compilation Output](#compilation-output)
+1. [Declarations](#declarations)
+2. [Agent Metadata](#agent-metadata)
+3. [Prose](#prose)
+4. [Variables](#variables)
+5. [Control Flow](#control-flow)
+6. [Built-in Functions](#built-in-functions)
+7. [Tasks and Parallelism](#tasks-and-parallelism)
+8. [Operators](#operators)
+9. [Comments](#comments)
+10. [Targets](#targets)
+11. [Compilation Output](#compilation-output)
 
-## Command Structure
+## Declarations
+
+Every Stim file contains exactly one top-level declaration. There are two kinds: `command` and `agent`.
 
 ### Command Declaration
 
-Every Stim file must contain exactly one command declaration:
+Interactive workflow invoked by the user.
 
 ```stim
-command command_name {
+command name {
   // Command body
 }
 ```
 
 **Rules:**
-- Command names must be valid identifiers (letters, numbers, underscore)
-- Command names cannot start with numbers
-- Command names are used as the Claude Code command (`/command_name`)
+- Names must be valid identifiers (letters, numbers, underscore)
+- Names cannot start with numbers
+- Compiles to `/name` (Claude Code slash command) by default
 
-**Examples:**
 ```stim
 command hello { }           // Valid: /hello
 command deploy_app { }      // Valid: /deploy_app
-command buildProject { }    // Valid: /buildProject
 command 123invalid { }      // Invalid: starts with number
 ```
 
-### Command Body
+### Agent Declaration
 
-The command body contains zero or more statements:
+Static persona with metadata, invoked by the AI tool itself.
+
+```stim
+agent name {
+  description "..."
+  tools [A, B, C]
+  model "..."
+
+  "Prose line one."
+  "Prose line two."
+}
+```
+
+**Rules:**
+- Same naming rules as commands
+- Compiles to `@name` (Claude Code agent) by default
+- Metadata fields (`description`, `tools`, `model`) must come before other statements
+
+See [Agents](api/agents.md) for the full deep-dive.
+
+### Body
+
+The body of either declaration contains zero or more statements:
 
 ```stim
 command example {
   statement1()
   statement2()
-  // ...
+}
+
+agent example {
+  description "..."
+  "Prose statement."
+  if (condition) {
+    "Conditional prose."
+  }
+}
+```
+
+## Agent Metadata
+
+Only valid inside `agent` declarations. All fields are optional; each may appear at most once; all must come before non-metadata statements.
+
+| Field | Type | Purpose |
+|-------|------|---------|
+| `description` | string | One-line summary of the agent's role |
+| `tools` | array of identifiers | Tools the agent is allowed to call (Claude-specific) |
+| `model` | string | Preferred model (`opus`, `sonnet`, `haiku`) — Claude-specific |
+
+```stim
+agent reviewer {
+  description "Reviews PRs for security issues"
+  tools [Read, Grep, Bash]
+  model "sonnet"
+
+  "You are a security engineer."
+}
+```
+
+Fields a target doesn't understand are warn-and-dropped. See [Targets](api/targets.md).
+
+## Prose
+
+Bare string literals on a line become prose statements — they compile to plain text in the output.
+
+```stim
+agent x {
+  description "..."
+  "First paragraph."
+  "Second paragraph."
+}
+```
+
+Prose can appear inside control flow:
+
+```stim
+agent adaptive {
+  description "..."
+  if (expert_mode) {
+    "Use precise technical language."
+  } else {
+    "Define terms the first time you use them."
+  }
 }
 ```
 
@@ -481,9 +560,28 @@ Not currently supported. Use multiple single-line comments:
 // to document complex logic
 ```
 
+## Targets
+
+Every `.stim` file can be compiled for one of multiple AI tools. The `--target` flag selects which.
+
+```bash
+stim compile reviewer.stim --target cursor
+stim install reviewer.stim --target chatgpt --local
+```
+
+| Target | Default? | Output extension | Supports `tools`/`model` | Install location |
+|--------|----------|-----------------|--------------------------|------------------|
+| `claude` | ✓ | `.md` | ✓ | `~/.claude/{commands,agents}/` |
+| `cursor` | | `.mdc` | drops with warning | `./.cursor/rules/` |
+| `chatgpt` | | `.md` | drops with warning | `./dist/chatgpt/` or `./prompts/` |
+
+`stim compile` always writes to `./dist/<target>/<name>.<ext>` so that multi-target builds never collide.
+
+See [Targets](api/targets.md) for deeper adapter behavior and how to add a new target.
+
 ## Compilation Output
 
-Understanding how Stim compiles to Claude Code markdown helps debug issues.
+Understanding how Stim compiles to target markdown helps debug issues.
 
 ### Variable Assignments
 ```stim
@@ -571,6 +669,49 @@ Spawn a general-purpose subagent task: "task A"
 ### Task 2
 Spawn a general-purpose subagent task: "task B"
 ...
+```
+
+### Agents
+
+```stim
+agent reviewer {
+  description "Reviews PRs"
+  tools [Read, Grep]
+  model "sonnet"
+  "You are a code reviewer."
+}
+```
+
+**Compiles to (claude target):**
+```markdown
+---
+name: reviewer
+description: Reviews PRs
+tools: [Read, Grep]
+model: sonnet
+---
+
+You are a code reviewer.
+```
+
+**Compiles to (cursor target):**
+```markdown
+---
+description: Reviews PRs
+globs:
+alwaysApply: false
+---
+
+You are a code reviewer.
+```
+
+**Compiles to (chatgpt target):**
+```markdown
+# reviewer
+
+> Reviews PRs
+
+You are a code reviewer.
 ```
 
 ## Error Handling

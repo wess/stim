@@ -1,0 +1,15 @@
+command changelog {
+  ask("Show the commits between the last release tag and HEAD: `git log $(git describe --tags --abbrev=0)..HEAD --oneline`. If there's no release tag yet, fall back to all commits.")
+  wait_for_response()
+
+  ask("Group commits by kind: Features, Fixes, Refactors, Docs, Other. Skip anything user-irrelevant: version bumps, CI tweaks, dependency updates that don't change behavior, internal renames.")
+  wait_for_response()
+
+  ask("Write each entry from the *user's* perspective, not the developer's. A good entry tells the reader what they can now do, or what no longer breaks. 'Added caching layer' is dev-speak. 'Repeated page loads are now 10x faster' is user-speak.")
+  wait_for_response()
+
+  if (confirm("Append this to CHANGELOG.md?")) {
+    ask("If CHANGELOG.md exists, read it first and prepend the new entries under the appropriate version heading. If it doesn't exist, create it with a '## [Unreleased]' section at the top, following the Keep a Changelog format.")
+    create_file("CHANGELOG.md", "new_changelog_content")
+  }
+}

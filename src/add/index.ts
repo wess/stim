@@ -1,67 +1,67 @@
 import { writeFileSync, mkdirSync } from 'fs'
-import { resolve } from 'path'
+import { dirname } from 'path'
 import { parseCommand } from '../parser/index.js'
-import { compileCommand } from '../compiler/index.js'
 import { readLock, writeLock } from '../lockfile/index.js'
-import { parseSource, resolveTag, fetchManifest, fetchStimFile } from '../registry/index.js'
-
-const resolveGlobalDir = () => {
-  const homeDir = process.env.HOME || process.env.USERPROFILE
-  if (!homeDir) {
-    console.error('Error: Could not determine home directory')
-    process.exit(1)
-  }
-  return resolve(homeDir!, '.claude')
-}
+import { parseSource, sourceKey, resolveTag, fetchManifest, fetchStimFile } from '../registry/index.js'
+import { getTarget, extractTarget } from '../targets/index.js'
 
 export const handleAdd = async (args: string[]) => {
-  const local = args.includes('--local')
-  const sources = args.filter(a => !a.startsWith('--'))
+  const { target: targetName, rest } = extractTarget(args)
+  const local = rest.includes('--local')
+  const sources = rest.filter(a => !a.startsWith('--'))
 
   if (sources.length === 0) {
     console.error('Error: No package source specified')
-    console.error('Usage: stim add <github/user/repo[@tag]> [--local]')
+    console.error('Usage: stim add <github/user/repo[@tag]> [--target <name>] [--local]')
     process.exit(1)
   }
 
+  const target = getTarget(targetName)
+
   for (const source of sources) {
-    await addPackage(source, local)
+    await addPackage(source, local, target)
   }
 }
 
-const addPackage = async (source: string, local: boolean) => {
+const addPackage = async (source: string, local: boolean, target: ReturnType<typeof getTarget>) => {
   try {
-    const { owner, repo, tag: requestedTag } = parseSource(source)
-    const tag = await resolveTag(owner, repo, requestedTag)
-    const manifest = await fetchManifest(owner, repo, tag)
+    const parsed = parseSource(source)
+    const tag = await resolveTag(parsed.owner, parsed.repo, parsed.tag)
+    const manifest = await fetchManifest(parsed.owner, parsed.repo, tag, parsed.subpath)
 
-    const baseDir = local
-      ? resolve(process.cwd(), '.claude')
-      : resolveGlobalDir()
-
-    const commandsDir = resolve(baseDir, 'commands')
-    mkdirSync(commandsDir, { recursive: true })
-
-    const commandNames: string[] = []
+    const installedNames: string[] = []
 
     for (const file of manifest.commands) {
-      const stimSource = await fetchStimFile(owner, repo, tag, file)
-      const command = parseCommand(stimSource)
-      const markdown = compileCommand(command)
+      const stimSource = await fetchStimFile(parsed.owner, parsed.repo, tag, file, parsed.subpath)
+      const decl = parseCommand(stimSource)
+      const output = target.compile(decl)
+      const dest = target.destination(decl, { local })
 
-      const outputFile = resolve(commandsDir, `${command.name}.md`)
-      writeFileSync(outputFile, markdown, 'utf-8')
-      commandNames.push(command.name)
+      mkdirSync(dirname(dest.path), { recursive: true })
+      writeFileSync(dest.path, output, 'utf-8')
+      installedNames.push(decl.name)
     }
 
-    const lock = readLock(baseDir)
-    const key = `github/${owner}/${repo}`
-    lock.packages[key] = { version: tag, commands: commandNames }
-    writeLock(baseDir, lock)
+    const lockDir = lockDirFor(target.name, local)
+    const lock = readLock(lockDir)
+    const key = sourceKey(parsed)
+    lock.packages[key] = { version: tag, commands: installedNames }
+    writeLock(lockDir, lock)
 
-    console.log(`✓ Added ${key}@${tag} (${commandNames.length} commands: ${commandNames.join(', ')})`)
+    console.log(`✓ Added ${key}@${tag} (${target.name}, ${installedNames.length} files: ${installedNames.join(', ')})`)
   } catch (error) {
     console.error('Add error:', (error as Error).message)
     process.exit(1)
   }
+}
+
+const lockDirFor = (targetName: string, local: boolean): string => {
+  if (targetName === 'claude') {
+    const home = process.env.HOME || process.env.USERPROFILE
+    if (!home) {
+      throw new Error('Could not determine home directory')
+    }
+    return local ? `${process.cwd()}/.claude` : `${home}/.claude`
+  }
+  return `${process.cwd()}/.${targetName}`
 }

@@ -1,9 +1,21 @@
-export type Command = {
+export type Kind = 'command' | 'agent'
+
+export type Declaration = {
+  kind: Kind
   name: string
   body: Statement[]
   annotations?: Record<string, string>
+  metadata?: AgentMetadata
   imports?: ImportStatement[]
   importedScope?: Record<string, any>
+}
+
+export type Command = Declaration
+
+export type AgentMetadata = {
+  description?: string
+  tools?: string[]
+  model?: string
 }
 
 export type Statement = {
@@ -25,6 +37,8 @@ export type StatementType =
   | 'task'
   | 'parallel'
   | 'annotation'
+  | 'metadata'
+  | 'prose'
 
 export type AgentType = 'bash' | 'explore' | 'plan' | 'general'
 
@@ -49,6 +63,17 @@ export type AnnotationStatement = {
   type: 'annotation'
   key: string
   value: string
+}
+
+export type MetadataStatement = {
+  type: 'metadata'
+  key: string
+  value: string | string[]
+}
+
+export type ProseStatement = {
+  type: 'prose'
+  text: string
 }
 
 export type AskStatement = {

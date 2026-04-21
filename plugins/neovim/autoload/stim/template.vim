@@ -53,6 +53,51 @@ function! stim#template#basic_command(name)
         \ . '}'
 endfunction
 
+" Create a new agent template
+function! stim#template#new_agent(...)
+  let agent_name = ''
+
+  if a:0 > 0 && !empty(a:1)
+    let agent_name = a:1
+  else
+    let agent_name = input('Agent name: ', '', 'file')
+  endif
+
+  if empty(agent_name)
+    echo 'Cancelled'
+    return
+  endif
+
+  if agent_name !~ '^[a-zA-Z_][a-zA-Z0-9_]*$'
+    echohl ErrorMsg
+    echo 'Invalid agent name. Must be a valid identifier.'
+    echohl None
+    return
+  endif
+
+  let template = stim#template#basic_agent(agent_name)
+
+  enew
+  setfiletype stim
+  call setline(1, split(template, '\n'))
+
+  call search('description', 'w')
+
+  echo 'New Stim agent "' . agent_name . '" created!'
+endfunction
+
+" Generate basic agent template
+function! stim#template#basic_agent(name)
+  return 'agent ' . a:name . ' {' . "\n"
+        \ . '  description "Describe what this agent does"' . "\n"
+        \ . '  tools [Read, Grep, Bash]' . "\n"
+        \ . '  model "sonnet"' . "\n"
+        \ . '  ' . "\n"
+        \ . '  "You are a helpful assistant."' . "\n"
+        \ . '  "Add further instructions here."' . "\n"
+        \ . '}'
+endfunction
+
 " Generate interactive survey template
 function! stim#template#survey()
   return 'questions = [' . "\n"

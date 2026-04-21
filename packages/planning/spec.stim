@@ -1,0 +1,26 @@
+command spec {
+  ask("What are we building? One sentence — if you can't say it in one, you don't know yet.")
+  wait_for_response()
+
+  ask("Who is this for? Be specific. 'Developers' doesn't cut it. What do they already know? What can't they do today that this enables?")
+  wait_for_response()
+
+  questions = ["What problem does this actually solve, not what does it do", "What's the single most critical feature to ship first", "What is explicitly out of scope for v1", "What does done look like and how will you know it's shippable"]
+
+  for q in questions {
+    ask(q)
+    wait_for_response()
+  }
+
+  unclear = true
+  while (unclear) {
+    ask("What's the next ambiguity that would stall implementation? Ask it as a concrete question, not a vague concern.")
+    wait_for_response()
+    if (confirm("Spec is clear enough to start implementing?")) {
+      unclear = false
+    }
+  }
+
+  ask("Compile SPEC.md with sections: Problem, Users, Scope (In and Out), Success Criteria, Open Questions. Use only the answers above. Do not invent filler or boilerplate.")
+  create_file("SPEC.md", "compiled_spec")
+}

@@ -1,13 +1,12 @@
-import type { Command, Statement } from '../types/index.js'
+import type { Declaration, Kind, AgentMetadata, Statement } from '../types/index.js'
 
-export const parseCommand = (source: string): Command => {
+export const parseCommand = (source: string): Declaration => {
   const lines = source.split('\n').map(line => line.trim()).filter(Boolean)
-  
+
   if (lines.length === 0) {
     throw new Error('Empty command file')
   }
-  
-  // Extract imports before command block
+
   const imports: { path: string }[] = []
   let commandStartIndex = 0
 
@@ -24,25 +23,31 @@ export const parseCommand = (source: string): Command => {
   const remainingLines = lines.slice(commandStartIndex)
 
   if (remainingLines.length === 0) {
-    throw new Error('Expected command declaration: command <name> {')
+    throw new Error('Expected declaration: command <name> { or agent <name> {')
   }
 
   const firstLine = remainingLines[0]
-  const commandMatch = firstLine.match(/^command\s+(\w+)\s*\{$/)
+  const declMatch = firstLine.match(/^(command|agent)\s+(\w+)\s*\{$/)
 
-  if (!commandMatch) {
-    throw new Error('Expected command declaration: command <name> {')
+  if (!declMatch) {
+    throw new Error('Expected declaration: command <name> { or agent <name> {')
   }
 
-  const name = commandMatch[1]
+  const kind = declMatch[1] as Kind
+  const name = declMatch[2]
   const body = parseBody(remainingLines.slice(1, -1))
 
   const annotations: Record<string, string> = {}
+  const metadata: AgentMetadata = {}
   const filtered: Statement[] = []
   let pastAnnotations = false
+  let pastMetadata = false
 
   for (const stmt of body) {
     if (stmt.type === 'annotation') {
+      if (kind === 'agent') {
+        throw new Error(`Annotations are not allowed in agent declarations (found @${stmt.key})`)
+      }
       if (pastAnnotations) {
         throw new Error('Annotations must appear before other statements')
       }
@@ -50,16 +55,31 @@ export const parseCommand = (source: string): Command => {
         throw new Error(`Duplicate annotation: @${stmt.key}`)
       }
       annotations[stmt.key] = stmt.value
+    } else if (stmt.type === 'metadata') {
+      if (kind !== 'agent') {
+        throw new Error(`Metadata field "${stmt.key}" is only allowed in agent declarations`)
+      }
+      if (pastMetadata) {
+        throw new Error('Metadata fields must appear before other statements')
+      }
+      pastAnnotations = true
+      if ((metadata as any)[stmt.key] !== undefined) {
+        throw new Error(`Duplicate metadata field: ${stmt.key}`)
+      }
+      ;(metadata as any)[stmt.key] = stmt.value
     } else {
       pastAnnotations = true
+      pastMetadata = true
       filtered.push(stmt)
     }
   }
 
   return {
+    kind,
     name,
     body: filtered,
     ...(Object.keys(annotations).length > 0 ? { annotations } : {}),
+    ...(Object.keys(metadata).length > 0 ? { metadata } : {}),
     ...(imports.length > 0 ? { imports } : {}),
   }
 }
@@ -119,10 +139,13 @@ const parseBody = (lines: string[]): Statement[] => {
       statements.push({ type: 'wait_for_response' })
     } else if (line.startsWith('@')) {
       statements.push(parseAnnotation(line))
+    } else if (isMetadataLine(line)) {
+      statements.push(parseMetadata(line))
+    } else if (line.startsWith('"') || line.startsWith("'")) {
+      statements.push(parseProse(line))
     } else if (line.includes(' = ')) {
       statements.push(parseAssignment(line))
     } else {
-      // Function call
       statements.push(parseFunctionCall(line))
     }
     
@@ -136,6 +159,36 @@ const VALID_ANNOTATIONS: Record<string, string[]> = {
   topology: ['pipeline', 'fanout', 'supervisor'],
   memory: ['shared', 'none'],
   on_error: ['escalate'],
+}
+
+const METADATA_KEYS = ['description', 'tools', 'model'] as const
+
+const isMetadataLine = (line: string): boolean =>
+  METADATA_KEYS.some(k => line.startsWith(`${k} `) && !line.startsWith(`${k} =`) && !line.startsWith(`${k}(`))
+
+const parseMetadata = (line: string): Statement => {
+  const match = line.match(/^(\w+)\s+(.+)$/)
+  if (!match) throw new Error(`Invalid metadata line: ${line}`)
+
+  const key = match[1]
+  let raw = match[2].trim()
+  let value: string | string[] = raw
+
+  if (raw.startsWith('[') && raw.endsWith(']')) {
+    const inner = raw.slice(1, -1)
+    value = inner.split(',').map(x => x.trim().replace(/^["']|["']$/g, '')).filter(Boolean)
+  } else if ((raw.startsWith('"') && raw.endsWith('"')) || (raw.startsWith("'") && raw.endsWith("'"))) {
+    value = raw.slice(1, -1)
+  }
+
+  return { type: 'metadata', key, value }
+}
+
+const parseProse = (line: string): Statement => {
+  if ((line.startsWith('"') && line.endsWith('"')) || (line.startsWith("'") && line.endsWith("'"))) {
+    return { type: 'prose', text: line.slice(1, -1) }
+  }
+  throw new Error(`Unterminated string literal: ${line}`)
 }
 
 const parseAnnotation = (line: string): Statement => {

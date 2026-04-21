@@ -27,9 +27,9 @@ describe('cli help output', () => {
     await proc.exited
 
     expect(output).toContain('Usage: stim <command>')
-    expect(output).toContain('add <github/user/repo[@tag]> [--local]')
-    expect(output).toContain('remove <github/user/repo> [--local]')
-    expect(output).toContain('update [github/user/repo] [--local]')
+    expect(output).toContain('add <github/user/repo')
+    expect(output).toContain('remove <github/user/repo')
+    expect(output).toContain('update [github/user/repo')
   })
 
   test('shows version', async () => {

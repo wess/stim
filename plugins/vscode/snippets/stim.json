@@ -9,6 +9,19 @@
     ],
     "description": "Create a new Stim command"
   },
+  "Agent Template": {
+    "prefix": "agent",
+    "body": [
+      "agent ${1:name} {",
+      "\tdescription \"${2:one-line summary}\"",
+      "\ttools [${3:Read, Grep}]",
+      "\tmodel \"${4:sonnet}\"",
+      "\t",
+      "\t\"${5:You are ...}\"",
+      "}"
+    ],
+    "description": "Create a new Stim agent"
+  },
   "Ask Question": {
     "prefix": "ask",
     "body": [

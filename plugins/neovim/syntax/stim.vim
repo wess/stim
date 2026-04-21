@@ -8,7 +8,8 @@ if exists('b:current_syntax')
 endif
 
 " Keywords
-syn keyword stimKeyword command if else while for in break task parallel
+syn keyword stimKeyword command agent if else while for in break task parallel
+syn keyword stimMetadata description tools model
 syn keyword stimBoolean true false
 syn keyword stimAgentType bash explore plan general
 syn keyword stimBuiltinFunction ask confirm wait_for_response create_file
@@ -47,12 +48,14 @@ syn region stimCommandBlock start='{' end='}' fold transparent contains=ALL
 
 " Command declarations
 syn match stimCommandDecl '\<command\s\+\w\+' contains=stimKeyword
+syn match stimCommandDecl '\<agent\s\+\w\+' contains=stimKeyword
 
 " Brackets and braces
 syn match stimBrackets '[(){}\[\]]'
 
 " Define highlighting groups
 hi def link stimKeyword Keyword
+hi def link stimMetadata Identifier
 hi def link stimBoolean Boolean
 hi def link stimAgentType Type
 hi def link stimBuiltinFunction Function

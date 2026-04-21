@@ -6,10 +6,32 @@ module.exports = grammar({
   extras: ($) => [/\s/, $.comment],
 
   rules: {
-    source_file: ($) => $.command_declaration,
+    source_file: ($) => choice($.command_declaration, $.agent_declaration),
 
     command_declaration: ($) =>
       seq("command", field("name", $.identifier), "{", optional($.statement_list), "}"),
+
+    agent_declaration: ($) =>
+      seq("agent", field("name", $.identifier), "{", optional($.agent_body), "}"),
+
+    agent_body: ($) => repeat1(choice($.agent_metadata, $.prose_statement)),
+
+    agent_metadata: ($) =>
+      choice($.description_field, $.tools_field, $.model_field),
+
+    description_field: ($) => seq("description", field("value", $.string)),
+
+    tools_field: ($) =>
+      seq(
+        "tools",
+        "[",
+        optional(seq($.identifier, repeat(seq(",", $.identifier)))),
+        "]",
+      ),
+
+    model_field: ($) => seq("model", field("value", $.string)),
+
+    prose_statement: ($) => $.string,
 
     statement_list: ($) => repeat1($._statement),
 

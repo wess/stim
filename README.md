@@ -1,8 +1,8 @@
 # Stim
 
-**A DSL compiler that transforms `.stim` files into Claude Code commands.**
+**A DSL for writing AI prompts — commands, agents, and rules — that compiles to whatever tool you use.**
 
-Stim gives you variables, control flow, subagent tasks, and parallel execution for building sophisticated Claude Code slash commands. Write `.stim`, compile to markdown, use as `/command`.
+Write one `.stim` file. Target Claude Code, ChatGPT, Cursor, or any future AI tool by switching a flag.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -10,58 +10,48 @@ Stim gives you variables, control flow, subagent tasks, and parallel execution f
 
 ## Why Stim?
 
-Claude Code commands are markdown files. Simple ones are fine to write by hand, but complex workflows with branching logic, loops, and multi-agent orchestration become unreadable fast.
+AI prompts have become software. Slash commands, system prompts, agent definitions, rule files — they're all code now, but most of us write them as raw markdown that breaks the moment the logic gets complex or the tool changes. Stim treats prompts as source code: parse, validate, compile.
 
-**Markdown by hand:**
-```markdown
-Ask me one question at a time so we can develop a spec...
-Remember, only one question at a time...
-Make sure to not be agreeable...
-Once we are done, save the spec as SPEC.md...
-Ask if the user wants to create a git repo...
-```
+**Two declarators, three targets:**
 
-**Stim:**
 ```stim
-command brainstorm {
-  questions = ["What problem?", "Who are users?", "What constraints?"]
-
-  for question in questions {
-    ask(question)
-    wait_for_response()
+command deploy {
+  ask("Which environment?")
+  wait_for_response()
+  for service in services {
+    task bash "deploy " + service { ... }
   }
-
-  while (!spec_complete) {
-    ask("Next critical question?")
-    if (confirm("Spec complete?")) {
-      spec_complete = true
-    }
-  }
-
-  create_file("SPEC.md", "generated_spec")
 }
 ```
 
-| Markdown | Stim |
-|----------|------|
-| Hard to maintain complex logic | Clean, readable control flow |
-| Repetitive instructions | Variables and loops |
-| No error checking | Type-safe compilation |
-| Difficult to version control | Git-friendly source files |
-| Copy-paste reuse | Modular file references |
-| Single-agent only | Multi-agent parallelism |
+```stim
+agent reviewer {
+  description "Reviews PRs for security and correctness"
+  tools [Read, Grep, Bash]
+  model "sonnet"
 
-## Features
+  "You are a senior code reviewer. Cite specific files and line numbers."
+  "Prioritize by severity: must change, should change, could improve."
+}
+```
 
-- **Control flow** -- `if`/`else`, `while`, `for`, `break`
-- **Variables** -- strings, booleans, arrays
-- **User interaction** -- `ask()`, `confirm()`, `wait_for_response()`
-- **File operations** -- `create_file()` and more
-- **Subagent tasks** -- spawn `bash`, `explore`, `plan`, or `general` agents
-- **Parallel execution** -- run multiple tasks concurrently with `parallel {}`
-- **File references** -- `task("other.stim")` inlines another command at compile time
-- **Standalone binary** -- compiles to a single executable with no runtime dependencies
-- **Package management** -- `stim add github/user/repo` to install shared commands
+One source, many outputs:
+
+```bash
+stim install reviewer.stim                   # → ~/.claude/agents/reviewer.md
+stim install reviewer.stim --target cursor   # → .cursor/rules/reviewer.mdc
+stim compile reviewer.stim --target chatgpt  # → dist/chatgpt/reviewer.md
+```
+
+## What You Get
+
+- **Two declarators** — `command` for interactive slash commands, `agent` for system prompts with metadata
+- **Three targets** — `claude`, `chatgpt`, `cursor` (more to come; targets are pluggable adapters)
+- **Real control flow** — `if`/`else`, `while`, `for`, `break`
+- **Variables and imports** — strings, booleans, arrays; share definitions across files
+- **Subagent tasks** — spawn `bash`, `explore`, `plan`, or `general` agents; run them in parallel
+- **Package management** — `stim add github/user/repo` to install shared commands
+- **Standalone binary** — single compiled executable, no Node/npm runtime
 
 ## Installation
 
@@ -79,31 +69,23 @@ brew install wess/packages/stim
 
 ### Manual Download
 
-Download from [GitHub Releases](https://github.com/wess/stim/releases):
+Pick your platform from [GitHub Releases](https://github.com/wess/stim/releases):
 
-**macOS (Apple Silicon):**
 ```bash
+# macOS Apple Silicon
 curl -L https://github.com/wess/stim/releases/latest/download/stim-darwin-arm64 -o stim
-chmod +x stim
-sudo mv stim /usr/local/bin/
-```
+chmod +x stim && sudo mv stim /usr/local/bin/
 
-**macOS (Intel):**
-```bash
+# macOS Intel
 curl -L https://github.com/wess/stim/releases/latest/download/stim-darwin-x64 -o stim
-chmod +x stim
-sudo mv stim /usr/local/bin/
-```
+chmod +x stim && sudo mv stim /usr/local/bin/
 
-**Linux (x64):**
-```bash
+# Linux x64
 curl -L https://github.com/wess/stim/releases/latest/download/stim-linux-x64 -o stim
-chmod +x stim
-sudo mv stim /usr/local/bin/
+chmod +x stim && sudo mv stim /usr/local/bin/
 ```
 
-**Windows (x64):**
-Download `stim-windows-x64.exe` from releases and add to your PATH.
+Windows: download `stim-windows-x64.exe` and add it to your `PATH`.
 
 ### Build from Source
 
@@ -117,9 +99,7 @@ bun run build
 ./dist/stim version
 ```
 
-## Quick Start
-
-**1. Write a `.stim` file:**
+## Your First Command
 
 ```stim
 command greet {
@@ -129,189 +109,269 @@ command greet {
 }
 ```
 
-**2. Install it as a Claude Code command:**
+Install it:
 
 ```bash
-stim install greet.stim
+stim install greet.stim        # → ~/.claude/commands/greet.md
 ```
 
-**3. Use it:**
+Use it in Claude Code: `/greet`.
 
+## Your First Agent
+
+```stim
+agent security_reviewer {
+  description "Reviews code for security vulnerabilities"
+  tools [Read, Grep, Bash]
+  model "sonnet"
+
+  "You are a security engineer specializing in web application security."
+  "When reviewing code, look for: SQL injection, XSS, auth bypasses, exposed secrets, unsafe deserialization."
+  "Cite file paths and line numbers for every finding."
+  "Prioritize findings: critical (exploit exists), high (likely exploitable), medium (defense-in-depth), low (style)."
+}
 ```
-/greet
-```
 
-The `install` command compiles and places the output in `~/.claude/commands/`. Use `stim install greet.stim --local` to install to `.claude/commands/` in the current project instead.
-
-To compile without installing (outputs to `dist/`):
+Install it:
 
 ```bash
-stim compile greet.stim
+stim install security_reviewer.stim   # → ~/.claude/agents/security_reviewer.md
 ```
+
+In Claude Code: `@security_reviewer` spawns the agent.
+
+## Targeting Other Tools
+
+The same source compiles to other tools — frontmatter, file layout, and unsupported fields are handled automatically.
+
+```bash
+stim install security_reviewer.stim --target cursor
+# → .cursor/rules/security_reviewer.mdc
+# (tools and model fields dropped with a warning — Cursor doesn't use them)
+
+stim compile security_reviewer.stim --target chatgpt
+# → dist/chatgpt/security_reviewer.md
+# (plain markdown with # heading and > description — paste into a Custom GPT)
+```
+
+| Target | Output location | Frontmatter | Notes |
+|--------|----------------|-------------|-------|
+| `claude` | `~/.claude/{commands,agents}/` (or `.claude/…` with `--local`) | YAML with `name`, `description`, `tools`, `model` | Default. Full feature support. |
+| `cursor` | `.cursor/rules/<name>.mdc` | YAML with `description`, `globs`, `alwaysApply` | `tools`/`model` warn-and-drop. Always project-scoped. |
+| `chatgpt` | `dist/chatgpt/<name>.md` (or `./prompts/` with `--local`) | None (heading + quote block) | For copy-pasting into the OpenAI console. |
 
 ## Language Overview
 
 ### Commands
 
-Every `.stim` file declares one command:
+Commands are interactive workflows — they ask questions, branch on answers, spawn tasks.
 
 ```stim
-command deploy {
-  // statements here
+command brainstorm {
+  ask("What problem are you solving?")
+  wait_for_response()
+
+  done = false
+  while (!done) {
+    ask("What's the next critical question?")
+    wait_for_response()
+    if (confirm("Spec complete?")) {
+      done = true
+    }
+  }
+
+  create_file("SPEC.md", "generate_spec()")
 }
 ```
 
-The command name becomes the slash command (`/deploy`).
+### Agents
+
+Agents are static personas with metadata. The body is prose — bare string literals on their own lines.
+
+```stim
+agent doc_writer {
+  description "Writes clear technical documentation"
+  tools [Read, Edit, Grep]
+
+  "You write documentation for engineers, not marketing copy."
+  "Lead with the shape — what the thing is and what it does — before mechanics."
+  "Use concrete examples from the actual code, never hypothetical ones."
+}
+```
+
+Metadata fields must come before prose. Fields a target doesn't understand are dropped with a warning.
 
 ### Variables
 
 ```stim
-name = "production"
-items = ["api", "web", "worker"]
-ready = true
+services = ["api", "web", "worker"]
+env = "production"
+dry_run = false
+```
+
+Used anywhere a value is expected:
+
+```stim
+for service in services {
+  ask("Deploy " + service + " to " + env + "?")
+}
 ```
 
 ### Control Flow
 
 ```stim
-if (ready) {
-  for service in items {
-    ask("Deploy " + service + "?")
-    wait_for_response()
-  }
+if (confirm("Ready?")) {
+  ask("Proceeding")
+} else {
+  ask("Aborted")
+}
+
+for step in steps {
+  if (step == "stop") { break }
+  ask(step)
 }
 
 while (!done) {
-  ask("Any more services?")
-  if (confirm("All done?")) {
-    done = true
-  }
+  ask("Next requirement?")
+  if (confirm("All captured?")) { done = true }
 }
-```
-
-### Built-in Functions
-
-```stim
-ask("What should I work on?")       // prompt the user
-wait_for_response()                  // pause for user input
-confirm("Deploy to production?")     // yes/no confirmation
-create_file("output.md", content)    // create a file
 ```
 
 ### Tasks
 
-Spawn Claude Code subagents for autonomous subtasks:
+Spawn Claude Code subagents from within a command:
 
 ```stim
-// Default general-purpose agent
-task "explore the auth module" {
-  ask("What patterns exist?")
-  wait_for_response()
-}
-
-// Specify an agent type: bash, explore, plan, general
 task explore "find API endpoints" {
-  ask("List all API endpoints in the project")
+  ask("List all route handlers in the codebase")
 }
 
-// Reference another .stim file (inlined at compile time)
-task("helpers/security.stim", explore)
+task bash "run tests" {
+  ask("Execute the full test suite")
+}
+
+task("helpers/security.stim", explore)   // inline another .stim file
 ```
-
-Agent types:
-
-| Type | Use for |
-|------|---------|
-| `general` | General-purpose work (default) |
-| `explore` | Fast codebase search and analysis |
-| `bash` | Shell commands, git, builds |
-| `plan` | Architecture and implementation planning |
 
 ### Parallel Execution
 
-Run multiple tasks concurrently:
-
 ```stim
 parallel {
-  task explore "analyze frontend" {
-    ask("What frontend patterns are used?")
-  }
-  task explore "analyze backend" {
-    ask("What backend patterns are used?")
-  }
-  task bash "run tests" {
-    ask("Execute the test suite")
-  }
+  task explore "analyze frontend" { ask("What patterns are used?") }
+  task explore "analyze backend" { ask("What patterns are used?") }
+  task bash "run checks" { ask("Run linter and type checker") }
 }
 ```
 
-This compiles to instructions that tell Claude Code to spawn all three subagents simultaneously.
+Compiles to instructions telling Claude Code to spawn all three subagents concurrently.
 
 ## CLI Reference
 
 ```bash
-stim compile <file.stim>                     # Compile to dist/
-stim install <file.stim> [--local]           # Install as Claude command
-stim add <github/user/repo[@tag]> [--local]  # Add package from GitHub
-stim remove <github/user/repo> [--local]     # Remove installed package
-stim update [github/user/repo] [--local]     # Update packages
-stim version                                 # Show version
-stim help                                    # Show help
+stim compile <file.stim> [--target <name>]
+stim install <file.stim> [--target <name>] [--local]
+stim add <github/user/repo[/subpath][@tag]> [--target <name>] [--local]
+stim remove <github/user/repo[/subpath]> [--target <name>] [--local]
+stim update [github/user/repo[/subpath]] [--target <name>] [--local]
+stim version
+stim help
+
+stim --lsp                    # start the Language Server on stdio
 ```
+
+**Flags**
+
+| Flag | Description |
+|------|-------------|
+| `--target <name>` | `claude`, `chatgpt`, or `cursor`. Default: `claude`. |
+| `--local` | Install to the project directory instead of the user's home. |
+| `--lsp` | Start the LSP server (for editor integrations). |
+
+## Packages
+
+Stim has a decentralized package system: any GitHub repo with a `stim.yaml` manifest is a package. Install with `stim add github/<user>/<repo>`.
+
+**First-party packages** live in this repo under [`packages/`](packages/):
+
+```bash
+stim add github/wess/stim/packages/reviews   # security, quality, docs reviewer agents
+stim add github/wess/stim/packages/gitflow   # commit, PR, changelog commands
+stim add github/wess/stim/packages/planning  # spec, breakdown, scope commands
+stim add github/wess/stim/packages/writing   # README, docstring, explainer agents
+```
+
+**Community packages** are curated in [`packages.md`](packages.md). Open a PR to add yours.
+
+See [docs/api/packages.md](docs/api/packages.md) for the full package format, manifest schema, and publishing guide.
 
 ## Architecture
 
-Three-stage pipeline: **Parse -> Resolve -> Compile**
+Four-stage pipeline. The parser and compiler are pure; all I/O is in the resolver and CLI.
 
 ```
-.stim file -> Parser -> AST -> Resolver -> AST (resolved) -> Compiler -> Markdown
+.stim ─► parse ─► AST ─► resolve ─► AST (inlined) ─► target adapter ─► output
+                                                          │
+                                                          ├─► claude  (.md + YAML)
+                                                          ├─► chatgpt (.md prose)
+                                                          └─► cursor  (.mdc)
 ```
 
 ```
 stim/
 ├── src/
 │   ├── main.ts          # Entry point
-│   ├── cli/             # CLI arg parsing, file I/O
-│   ├── parser/          # Recursive descent parser -> AST
-│   ├── resolve/         # Task file resolution (reads referenced .stim files)
-│   ├── compiler/        # AST -> markdown generation
-│   └── types/           # Statement, Command, AgentType definitions
-├── examples/            # Example .stim commands
-├── plugins/
-│   ├── vscode/          # VS Code extension (syntax, snippets, diagnostics)
-│   ├── neovim/          # Neovim plugin (syntax, text objects, templates)
-│   └── zed/             # Zed extension (tree-sitter grammar, highlighting)
+│   ├── cli/             # Argument parsing, file I/O
+│   ├── parser/          # .stim → AST
+│   ├── resolve/         # Inline task("file.stim") + imports
+│   ├── compiler/        # Target-agnostic prose emitter (shared)
+│   ├── targets/         # One adapter per AI tool
+│   │   ├── claude/
+│   │   ├── chatgpt/
+│   │   └── cursor/
+│   ├── add/, update/    # Package manager commands
+│   ├── registry/        # GitHub package fetching (supports subpaths)
+│   └── types/           # AST type definitions (Declaration, Statement)
+├── lsp/                 # Language Server Protocol implementation
+├── packages/            # First-party packages (reviews, gitflow, planning, writing)
+├── examples/            # Ready-to-use .stim files
+├── engine/              # Meta-workflow stim files (annotated commands)
+├── plugins/             # Editor integrations: VS Code, Neovim, Zed
 ├── docs/                # Documentation
-├── tests/               # Test suite
-└── dist/                # Built executable
+└── tests/               # Test suite (bun:test)
 ```
 
-The parser and compiler are pure functions with no I/O. The resolver handles file reads for `task("file.stim")` references, keeping the pipeline clean.
+Each target adapter is a 50-line module exposing `{ name, compile, destination, extension }`. Adding a new target (Windsurf, Gemini, anything) means writing one file.
 
 ## Documentation
 
-- **[Quickstart](docs/Quickstart.md)** -- get running in 5 minutes
-- **[Tutorial](docs/Tutorial.md)** -- step-by-step guide covering variables, control flow, tasks, and parallel execution
-- **[Syntax Reference](docs/Syntax-Reference.md)** -- complete grammar, keywords, and EBNF
-- **[API Reference](docs/API.md)** -- every statement type, function, and operator with compiled output examples
-- **[Examples](docs/Examples.md)** -- real-world commands: surveys, code reviews, CI pipelines, multi-agent research
-- **[FAQ](docs/FAQ.md)** -- common questions and troubleshooting
-- **[Contributing](docs/Contributing.md)** -- development setup, code style, PR guidelines
+- **[Quickstart](docs/Quickstart.md)** — five-minute walkthrough of commands + agents
+- **[Tutorial](docs/Tutorial.md)** — step-by-step guide, starts from zero
+- **[Syntax Reference](docs/Syntax-Reference.md)** — complete grammar and keywords
+- **[API Reference](docs/API.md)** — every statement and function with compiled output
+- **[Agents](docs/api/agents.md)** — agent declarator deep-dive
+- **[Targets](docs/api/targets.md)** — what each target does, how to add a new one
+- **[Packages](docs/api/packages.md)** — package format, publishing, discovery
+- **[Package Registry](packages.md)** — curated list of installable packages
+- **[Examples](docs/Examples.md)** — real-world patterns
+- **[FAQ](docs/FAQ.md)** — common questions
 
 ## Examples
 
-The `examples/` directory contains ready-to-use commands:
+The `examples/` directory contains working commands and agents:
 
-- **[brainstorm.stim](examples/brainstorm.stim)** -- interactive spec development
-- **[commit.stim](examples/commit.stim)** -- semantic commit workflow
-- **[plan.stim](examples/plan.stim)** -- project planning with phases
-- **[session-summary.stim](examples/session-summary.stim)** -- session analysis
-- **[security-review.stim](examples/security-review.stim)** -- security assessment
-- **[recall.stim](examples/recall.stim)** -- context management
+| File | Kind | What it does |
+|------|------|--------------|
+| [brainstorm.stim](examples/brainstorm.stim) | command | Interactive spec development |
+| [commit.stim](examples/commit.stim) | command | Semantic commit workflow |
+| [plan.stim](examples/plan.stim) | command | Project planning with phases |
+| [session-summary.stim](examples/session-summary.stim) | command | Session analysis |
+| [security-review.stim](examples/security-review.stim) | command | Security assessment |
+| [recall.stim](examples/recall.stim) | command | Context management |
+| [reviewer.stim](examples/reviewer.stim) | agent | Full-metadata code reviewer |
+| [explainer.stim](examples/explainer.stim) | agent | Minimal-metadata code explainer |
+| [refactorer.stim](examples/refactorer.stim) | agent | Behavior-preserving refactoring |
 
-### Multi-Agent Example
-
-A command that runs parallel analysis, then synthesizes the results:
+### Multi-Agent Deep Review
 
 ```stim
 command deep_review {
@@ -321,15 +381,12 @@ command deep_review {
   parallel {
     task explore "security scan" {
       ask("Check for SQL injection, XSS, auth flaws, exposed secrets")
-      wait_for_response()
     }
     task explore "performance audit" {
       ask("Find N+1 queries, unnecessary allocations, blocking I/O")
-      wait_for_response()
     }
     task explore "architecture review" {
       ask("Evaluate separation of concerns and dependency management")
-      wait_for_response()
     }
   }
 
@@ -338,61 +395,32 @@ command deep_review {
 }
 ```
 
-### Modular Commands with File References
-
-```stim
-// helpers/lint.stim
-command lint {
-  ask("Run linter on all source files and fix auto-fixable issues")
-}
-
-// precommit.stim
-command precommit {
-  parallel {
-    task("helpers/lint.stim", bash)
-    task("helpers/typecheck.stim", bash)
-  }
-  ask("All checks passed!")
-}
-```
-
 ## Development
 
 ```bash
-bun run dev                    # Run without building
-bun run dev -- compile f.stim  # Compile in dev mode
-bun run build                  # Build standalone binary
-bun run build:all              # Cross-platform builds
-bun test                       # Run test suite
+bun install
+bun run dev                    # run without building
+bun run dev -- compile f.stim  # dev-mode subcommand
+bun run build                  # single binary → dist/stim
+bun run build:all              # cross-platform binaries
+bun test                       # full test suite
+bun test tests/agent.test.ts   # one file
+bun test -t "parses tools"     # tests matching a name
 ```
 
 ## Editor Support
 
-### VS Code
+| Editor | Features |
+|--------|----------|
+| **VS Code** (`plugins/vscode/`) | Syntax highlighting, snippets, compile commands, real-time diagnostics |
+| **Neovim** (`plugins/neovim/`) | Syntax highlighting, text objects, templates, quickfix integration |
+| **Zed** (`plugins/zed/`) | Tree-sitter grammar, smart indentation, bracket matching |
 
-The `plugins/vscode/` extension provides:
-- Syntax highlighting via TextMate grammar
-- Snippets for commands, tasks, parallel blocks, loops
-- Compile commands from the command palette
-- Real-time diagnostics
-
-### Neovim
-
-The `plugins/neovim/` plugin provides:
-- Syntax highlighting with agent type support
-- Text objects, templates, and auto-completion
-- Compilation with quickfix integration
-
-### Zed
-
-The `plugins/zed/` extension provides:
-- Tree-sitter grammar for full syntax highlighting
-- Smart indentation and bracket matching
-- See the [Zed plugin README](plugins/zed/README.md) for build instructions
+All three editors talk to the same LSP server (`stim --lsp`).
 
 ## Contributing
 
-See [Contributing](docs/Contributing.md) for development setup, code style, and PR guidelines.
+See [docs/Contributing.md](docs/Contributing.md) for setup, code style, and PR guidelines.
 
 ```bash
 git clone https://github.com/wess/stim.git
@@ -401,6 +429,8 @@ bun install
 bun test
 ```
 
+Adding a new target is a good first contribution — see [docs/api/targets.md](docs/api/targets.md) for the adapter interface.
+
 ## License
 
-MIT -- see [LICENSE](LICENSE).
+MIT — see [LICENSE](LICENSE).

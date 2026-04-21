@@ -11,6 +11,7 @@ import { fileURLToPath } from 'url'
 
 const KEYWORDS: CompletionItem[] = [
   { label: 'command', kind: CompletionItemKind.Keyword, insertText: 'command ${1:name} {\n\t$0\n}', insertTextFormat: InsertTextFormat.Snippet },
+  { label: 'agent', kind: CompletionItemKind.Keyword, insertText: 'agent ${1:name} {\n\tdescription "${2:description}"\n\t$0\n}', insertTextFormat: InsertTextFormat.Snippet, detail: 'Declare an agent' },
   { label: 'if', kind: CompletionItemKind.Keyword, insertText: 'if (${1:condition}) {\n\t$0\n}', insertTextFormat: InsertTextFormat.Snippet },
   { label: 'while', kind: CompletionItemKind.Keyword, insertText: 'while (${1:condition}) {\n\t$0\n}', insertTextFormat: InsertTextFormat.Snippet },
   { label: 'for', kind: CompletionItemKind.Keyword, insertText: 'for ${1:item} in ${2:items} {\n\t$0\n}', insertTextFormat: InsertTextFormat.Snippet },
@@ -51,6 +52,12 @@ const ANNOTATION_VALUES: Record<string, CompletionItem[]> = {
     { label: 'escalate', kind: CompletionItemKind.EnumMember, detail: 'Escalate errors' },
   ],
 }
+
+const METADATA_KEYS: CompletionItem[] = [
+  { label: 'description', kind: CompletionItemKind.Property, insertText: 'description "${1:description}"', insertTextFormat: InsertTextFormat.Snippet, detail: 'Agent description' },
+  { label: 'tools', kind: CompletionItemKind.Property, insertText: 'tools [${1:Read, Grep, Bash}]', insertTextFormat: InsertTextFormat.Snippet, detail: 'Agent tools' },
+  { label: 'model', kind: CompletionItemKind.Property, insertText: 'model "${1:sonnet}"', insertTextFormat: InsertTextFormat.Snippet, detail: 'Agent model' },
+]
 
 const AGENT_TYPES: CompletionItem[] = [
   { label: 'general', kind: CompletionItemKind.EnumMember, detail: 'General purpose agent' },
@@ -139,7 +146,39 @@ export const getCompletions = (doc: TextDocument, position: Position): Completio
     return AGENT_TYPES
   }
 
-  // Default: keywords, functions, variables
+  // Default: keywords, functions, variables; include metadata keys inside agent bodies
   const variables = collectDeclaredVariables(text)
-  return [...KEYWORDS, ...FUNCTIONS, ...variables]
+  const inAgent = isInsideAgent(lines, position.line)
+  const base = [...KEYWORDS, ...FUNCTIONS, ...variables]
+  return inAgent ? [...METADATA_KEYS, ...base] : base
+}
+
+const isInsideAgent = (lines: string[], currentLine: number): boolean => {
+  let inAgent = false
+  let braceDepth = 0
+
+  for (let i = 0; i <= currentLine && i < lines.length; i++) {
+    const trimmed = lines[i].trim()
+
+    if (!inAgent) {
+      if (/^agent\s+\w+\s*\{$/.test(trimmed)) {
+        inAgent = true
+        braceDepth = 1
+        continue
+      }
+      if (/^command\s+\w+\s*\{$/.test(trimmed)) {
+        return false
+      }
+      continue
+    }
+
+    if (i === currentLine) return braceDepth > 0
+    if (trimmed.endsWith('{')) braceDepth++
+    if (trimmed === '}') {
+      braceDepth--
+      if (braceDepth === 0) inAgent = false
+    }
+  }
+
+  return inAgent
 }

@@ -1,0 +1,8 @@
+name: reviews
+version: 1.0.0
+author: stim
+description: Code review agents — security, quality, and documentation
+commands:
+  - security.stim
+  - quality.stim
+  - docs.stim

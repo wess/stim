@@ -1,0 +1,17 @@
+command breakdown {
+  ask("Paste the feature description, spec, or issue to break down. If you have a SPEC.md in the repo, read it.")
+  wait_for_response()
+
+  ask("Identify the first *unknown* — the thing you don't yet know how to do. Not a task to complete, a question to answer. Examples: 'how does the existing auth module handle refresh tokens', 'what rate limits does the external API enforce'. Implementation can't start until unknowns are resolved.")
+  wait_for_response()
+
+  ask("Break the work into tasks that each: (1) can be completed in under two hours, (2) have a testable, observable outcome, (3) don't depend on unresolved unknowns. Order by dependency, not priority.")
+  wait_for_response()
+
+  ask("For each task, write: a one-line title (imperative mood), the acceptance criterion (how you'll know it's done), and the first file or function the implementer should touch.")
+  wait_for_response()
+
+  if (confirm("Save as TASKS.md?")) {
+    create_file("TASKS.md", "task_breakdown")
+  }
+}

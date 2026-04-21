@@ -1,12 +1,12 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs'
 import { resolve, basename, dirname, join } from 'path'
 import { parseCommand } from '../parser/index.js'
-import { compileCommand } from '../compiler/index.js'
 import { resolveTaskFiles } from '../resolve/index.js'
 import { handleInstall } from '../install/index.js'
 import { handleAdd } from '../add/index.js'
 import { handleRemove } from '../remove/index.js'
 import { handleUpdate } from '../update/index.js'
+import { getTarget, DEFAULT_TARGET, listTargets, extractTarget } from '../targets/index.js'
 
 const getVersion = () => {
   try {
@@ -19,33 +19,36 @@ const getVersion = () => {
 }
 
 const showHelp = (version: string) => {
-  console.log(`Stim v${version} - DSL for Claude Code commands`)
+  console.log(`Stim v${version} - DSL for AI prompts, commands, and agents`)
   console.log('')
   console.log('Usage: stim <command> [options]')
   console.log('')
   console.log('Commands:')
-  console.log('  compile <file.stim>                        Compile .stim file to dist/')
-  console.log('  install <file.stim> [--local]              Install command (global by default)')
-  console.log('  add <github/user/repo[@tag]> [--local]     Add package from GitHub')
-  console.log('  remove <github/user/repo> [--local]        Remove installed package')
-  console.log('  update [github/user/repo] [--local]        Update packages to latest')
-  console.log('  version                                    Show version information')
-  console.log('  help                                       Show this help')
+  console.log('  compile <file.stim> [--target <t>]              Compile to dist/<target>/')
+  console.log('  install <file.stim> [--target <t>] [--local]    Install for the target')
+  console.log('  add <github/user/repo[/sub][@tag]> [--target <t>] [--local]    Add package from GitHub')
+  console.log('  remove <github/user/repo[/sub]> [--target <t>] [--local]       Remove installed package')
+  console.log('  update [github/user/repo[/sub]] [--target <t>] [--local]       Update packages to latest')
+  console.log('  version                                         Show version information')
+  console.log('  help                                            Show this help')
   console.log('')
   console.log('Flags:')
-  console.log('  --lsp                                      Start the LSP server (stdio)')
+  console.log(`  --target <name>                                 ${listTargets().join(' | ')} (default: ${DEFAULT_TARGET})`)
+  console.log('  --local                                         Install to project (.claude/, .cursor/, ./prompts/)')
+  console.log('  --lsp                                           Start the LSP server (stdio)')
   console.log('')
   console.log('Examples:')
   console.log('  stim compile brainstorm.stim')
   console.log('  stim install brainstorm.stim')
-  console.log('  stim install brainstorm.stim --local')
-  console.log('  stim add github/wess/brainstorm')
-  console.log('  stim add github/wess/brainstorm@v1.0.0 --local')
-  console.log('  stim remove github/wess/brainstorm')
-  console.log('  stim update')
+  console.log('  stim install reviewer.stim --target cursor')
+  console.log('  stim add github/wess/stim/packages/reviews     # install a first-party package')
+  console.log('  stim add github/user/repo@v1.0.0 --local       # pin + project scope')
+  console.log('')
+  console.log('Packages:')
+  console.log('  Browse the registry at https://github.com/wess/stim/blob/main/packages.md')
   console.log('')
   console.log('Engine:')
-  console.log('  stim install engine/engine.stim            Install the Stim engine')
+  console.log('  stim install engine/engine.stim                 Install the Stim engine')
   console.log('  Then use /stim workflow.stim in Claude Code')
 }
 
@@ -100,13 +103,15 @@ export const main = () => {
 }
 
 const handleCompile = (args: string[]) => {
-  if (args.length === 0) {
+  const { target: targetName, rest } = extractTarget(args)
+
+  if (rest.length === 0) {
     console.error('Error: No input file specified')
-    console.error('Usage: stim compile <file.stim>')
+    console.error('Usage: stim compile <file.stim> [--target <name>]')
     process.exit(1)
   }
 
-  const inputFile = resolve(args[0])
+  const inputFile = resolve(rest[0])
 
   if (!existsSync(inputFile)) {
     console.error(`Error: File not found: ${inputFile}`)
@@ -119,18 +124,19 @@ const handleCompile = (args: string[]) => {
   }
 
   try {
+    const target = getTarget(targetName)
     const source = readFileSync(inputFile, 'utf-8')
     const parsed = parseCommand(source)
-    const command = resolveTaskFiles(parsed, dirname(inputFile))
-    const markdown = compileCommand(command)
+    const decl = resolveTaskFiles(parsed, dirname(inputFile))
+    const output = target.compile(decl)
 
-    const distDir = resolve(process.cwd(), 'dist')
+    const distDir = resolve(process.cwd(), 'dist', target.name)
     mkdirSync(distDir, { recursive: true })
 
-    const outputFile = resolve(distDir, `${command.name}.md`)
-    writeFileSync(outputFile, markdown, 'utf-8')
+    const outputFile = resolve(distDir, `${decl.name}${target.extension}`)
+    writeFileSync(outputFile, output, 'utf-8')
 
-    console.log(`✓ Compiled ${basename(inputFile)} → ${outputFile}`)
+    console.log(`✓ Compiled ${basename(inputFile)} → ${outputFile} (${target.name})`)
   } catch (error) {
     console.error('Compilation error:', (error as Error).message)
     process.exit(1)

@@ -24,47 +24,66 @@ stim --help
 
 ## Compile
 
-Compile a `.stim` file to markdown:
+Compile a `.stim` file to the target's output format:
 
 ```bash
 stim compile <file.stim>
+stim compile <file.stim> --target <name>
 ```
 
-The output is written to `dist/<command_name>.md`.
+The output is written to `dist/<target>/<name>.<ext>`. Each target owns its own subdirectory so multiple target builds of the same source don't collide.
 
 **Example:**
 ```bash
-stim compile brainstorm.stim
+stim compile brainstorm.stim                  # → dist/claude/brainstorm.md
+stim compile brainstorm.stim --target cursor  # → dist/cursor/brainstorm.mdc
+stim compile brainstorm.stim --target chatgpt # → dist/chatgpt/brainstorm.md
 ```
 
-**Output:** `dist/brainstorm.md`
-
-The command name comes from the `command` declaration in the file.
+The declaration name comes from the `command` or `agent` keyword in the file.
 
 ## Install
 
-Install a command globally or locally:
+Install a command or agent for a target:
 
 ```bash
 stim install <file.stim>
-stim install <file.stim> --local
+stim install <file.stim> --target <name>
+stim install <file.stim> --target <name> --local
 ```
 
-Without `--local`, the command is installed globally and available in all Claude Code projects.
+Each target has its own install location. See [Targets](targets.md) for the full table.
 
-With `--local`, the command is installed only in the current project (in `.claude/commands/`).
-
-**Global installation:**
+**Claude (default):**
 ```bash
-stim install brainstorm.stim
+stim install brainstorm.stim                    # → ~/.claude/commands/brainstorm.md
+stim install reviewer.stim                      # → ~/.claude/agents/reviewer.md
+stim install brainstorm.stim --local            # → ./.claude/commands/brainstorm.md
 ```
 
-**Local installation:**
+**Cursor:**
 ```bash
-stim install brainstorm.stim --local
+stim install reviewer.stim --target cursor      # → ./.cursor/rules/reviewer.mdc
 ```
 
-The command can then be used in Claude Code as `/<command_name>`.
+**ChatGPT:**
+```bash
+stim install reviewer.stim --target chatgpt          # → ./dist/chatgpt/reviewer.md
+stim install reviewer.stim --target chatgpt --local  # → ./prompts/reviewer.md
+```
+
+## The `--target` Flag
+
+Selects which AI tool to compile for. Accepted values: `claude` (default), `chatgpt`, `cursor`.
+
+```bash
+stim compile reviewer.stim --target cursor
+stim install reviewer.stim --target chatgpt --local
+```
+
+When a target doesn't support a metadata field (Cursor and `tools`, for example), the compiler emits a warning and drops the field. Output is otherwise portable.
+
+See [Targets](targets.md) for the full per-target behavior.
 
 ## Package Management
 
@@ -75,19 +94,24 @@ Add a package from GitHub:
 ```bash
 stim add <github/user/repo>
 stim add <github/user/repo@tag>
-stim add <github/user/repo> --local
-stim add <github/user/repo@tag> --local
+stim add <github/user/repo/subpath>                # monorepo package
+stim add <github/user/repo/subpath@tag>
+stim add ... --target <name>                        # claude | chatgpt | cursor
+stim add ... --local                                # project scope
 ```
 
 **Examples:**
 ```bash
 stim add github/wess/brainstorm
 stim add github/wess/brainstorm@v1.0.0
+stim add github/wess/stim/packages/reviews          # first-party package
+stim add github/wess/stim/packages/reviews --target cursor
 stim add github/wess/brainstorm --local
-stim add github/wess/brainstorm@v1.2.3 --local
 ```
 
-The package is cloned from GitHub. If a specific version tag is not provided, the latest release is used.
+The package is fetched from GitHub's raw content API. If `@tag` isn't specified, `stim` resolves to the latest GitHub release (falling back to the most recent tag).
+
+See [Packages](packages.md) for the full package format and publishing guide.
 
 ### Remove
 
@@ -150,7 +174,36 @@ This includes:
 
 All bundled modules are available to your installed commands.
 
-## Lockfile Management
+## Package Manifest (`stim.yaml`)
+
+A published Stim package includes a `stim.yaml` at its root that lists the `.stim` files to install:
+
+```yaml
+name: brainstorm
+version: 1.0.0
+author: wess
+description: Spec development and idea refinement
+commands:
+  - brainstorm.stim
+  - ideate.stim
+  - reviewer.stim
+```
+
+The field is named `commands` for backwards compatibility, but it can list **any `.stim` files** — both commands and agents. Each file's declarator (`command` or `agent`) determines where the compiled output installs:
+
+- A `command` declaration installs to the target's commands directory (e.g. `~/.claude/commands/`).
+- An `agent` declaration installs to the target's agents directory (e.g. `~/.claude/agents/`).
+
+For backwards compatibility, `stim.json` with the same shape is still supported. New packages should use YAML.
+
+The `--target` flag works on `stim add`, `stim update`, and `stim remove`, so the same package can install for any supported target:
+
+```bash
+stim add github/wess/reviewer-pack                   # → claude
+stim add github/wess/reviewer-pack --target cursor   # → .cursor/rules/
+```
+
+## Lockfile
 
 A `stim.lock` file tracks installed package versions:
 
@@ -165,7 +218,7 @@ A `stim.lock` file tracks installed package versions:
 }
 ```
 
-Lockfiles are created and updated automatically by `add`, `remove`, and `update` commands.
+Lockfiles are created and updated automatically by `add`, `remove`, and `update`. Separate lockfiles are maintained per-target when you install the same package for multiple targets.
 
 ## Global vs Local Installation
 

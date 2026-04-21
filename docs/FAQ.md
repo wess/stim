@@ -16,7 +16,7 @@ Frequently asked questions and troubleshooting guide for Stim.
 
 ### What is Stim?
 
-Stim is a Domain-Specific Language (DSL) for creating sophisticated Claude Code commands. Instead of writing complex markdown instructions, you write `.stim` files with variables, loops, and conditionals that compile to Claude-executable `.md` commands.
+Stim is a Domain-Specific Language (DSL) for writing AI prompts — slash commands, agents, and rule files — that compiles for multiple AI tools. Instead of writing complex markdown by hand, you write `.stim` files with variables, control flow, and structured metadata, then pick a target (`claude`, `chatgpt`, `cursor`) at compile time.
 
 ### Why use Stim instead of writing markdown directly?
 
@@ -50,7 +50,39 @@ Benefits:
 
 ### Is Stim only for Claude Code?
 
-Currently yes, but the architecture is extensible. Future versions could target other LLM platforms.
+No. Stim ships with three targets — `claude`, `chatgpt`, and `cursor` — selected via `--target <name>`. Adding a new target is a small adapter module; see [Targets](api/targets.md).
+
+### What's the difference between a `command` and an `agent`?
+
+A `command` is an interactive workflow invoked by the user (as `/name` in Claude Code). It asks questions, branches on answers, spawns tasks.
+
+An `agent` is a static persona invoked by the AI tool itself (as `@name` in Claude Code). It has structured metadata (`description`, `tools`, `model`) and a body of prose that becomes the system prompt.
+
+Use a command when you're scripting an interaction. Use an agent when you're defining a role.
+
+### What happens to target-specific fields on other targets?
+
+They're **warn-and-dropped**. If your agent has `tools [Read, Grep]` and you compile for Cursor, the compiler emits a warning and drops those fields — Cursor rules don't use them. The rest of the file compiles normally. This keeps sources portable across targets.
+
+### How do I find and install third-party packages?
+
+The curated list of recommended packages lives in [packages.md](../packages.md) at the repo root. Install with:
+
+```bash
+stim add github/<user>/<repo>                        # repo-level package
+stim add github/<user>/<repo>/<subpath>              # subdirectory in a monorepo
+stim add github/<user>/<repo>@<tag>                  # pinned version
+stim add github/<user>/<repo> --target cursor        # different target
+stim add github/<user>/<repo> --local                # project scope
+```
+
+Packages are fetched from GitHub — there's no central registry and no review process for publishing. The `packages.md` list is opt-in discovery.
+
+### How do I publish a Stim package?
+
+Put a `stim.yaml` manifest and your `.stim` files in any GitHub repo. Tag a release. Share the install command. See [docs/api/packages.md](api/packages.md) for the full format.
+
+To get your package listed in the curated `packages.md` registry, open a PR adding a row to the Community Packages table.
 
 ### Do I need to know programming to use Stim?
 
@@ -65,8 +97,8 @@ The [Tutorial](Tutorial.md) walks through everything step-by-step.
 
 ### What are the prerequisites?
 
-- [Bun](https://bun.sh) - JavaScript runtime (latest version)
-- [Claude Code](https://claude.ai/code) - For executing compiled commands
+- [Bun](https://bun.sh) — if building from source (the released binary is standalone, no runtime needed)
+- An AI tool where you'll deploy the output — [Claude Code](https://claude.ai/code), [Cursor](https://cursor.com), or a ChatGPT Custom GPT
 - Basic command-line familiarity
 
 ### How do I install Stim?
@@ -83,19 +115,20 @@ bun install
 bun run build && bun run dev --help
 ```
 
-### Where do compiled commands go?
+### Where do compiled outputs go?
 
-Compiled `.md` files are created in `~/.claude/commands/`:
+Depends on the subcommand:
 
-```bash
-bun run build && ./dist/stim compile hello.stim
-# Creates ~/.claude/commands/hello.md
-# Use with: /hello
-```
+- `stim compile foo.stim` always writes to `./dist/<target>/<name>.<ext>` (for inspection).
+- `stim install foo.stim` writes to the target's native install location:
 
-### Can I change the output directory?
+| Target | `install` | `install --local` |
+|--------|-----------|-------------------|
+| `claude` | `~/.claude/{commands,agents}/` | `./.claude/{commands,agents}/` |
+| `cursor` | `./.cursor/rules/` | same (always project) |
+| `chatgpt` | `./dist/chatgpt/` | `./prompts/` |
 
-Not currently, but this is planned for a future version. Commands must be in `~/.claude/commands/` for Claude Code to recognize them.
+See [Targets](api/targets.md) for the full table and rationale.
 
 ## Syntax & Language
 

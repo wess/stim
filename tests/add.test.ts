@@ -131,7 +131,7 @@ describe('handleAdd', () => {
     await handleAdd(['github/wess/brainstorm', '--local'])
 
     expect(logs.some(l => l.includes('Added github/wess/brainstorm@v1.0.0'))).toBe(true)
-    expect(logs.some(l => l.includes('2 commands'))).toBe(true)
+    expect(logs.some(l => l.includes('2 files'))).toBe(true)
   })
 
   test('exits on invalid source format', () => {
@@ -144,5 +144,46 @@ describe('handleAdd', () => {
     }) as any
 
     expect(handleAdd(['github/wess/brainstorm@v1.0.0', '--local'])).rejects.toThrow('process.exit')
+  })
+
+  test('--target cursor installs packages to .cursor/rules/', async () => {
+    mockFetch()
+    await handleAdd(['github/wess/brainstorm', '--target', 'cursor'])
+
+    const cursorFile = resolve(TMP, '.cursor', 'rules', 'brainstorm.mdc')
+    expect(existsSync(cursorFile)).toBe(true)
+    expect(readFileSync(cursorFile, 'utf-8')).toMatch(/^---\n/)
+  })
+
+  test('package containing an agent installs agent to .claude/agents/', async () => {
+    const AGENT_SOURCE = `agent reviewer {
+  description "Reviews PRs"
+  "You are a reviewer."
+}`
+    globalThis.fetch = (async (url: string) => {
+      if (url.includes('/releases/latest')) {
+        return new Response(JSON.stringify({ tag_name: 'v1.0.0' }), { status: 200 })
+      }
+      if (url.endsWith('/stim.json')) {
+        return new Response(JSON.stringify({
+          name: 'reviewer-pack',
+          version: '1.0.0',
+          author: 'wess',
+          commands: ['reviewer.stim'],
+        }), { status: 200 })
+      }
+      if (url.endsWith('/reviewer.stim')) {
+        return new Response(AGENT_SOURCE, { status: 200 })
+      }
+      return new Response('', { status: 404 })
+    }) as any
+
+    await handleAdd(['github/wess/reviewer-pack', '--local'])
+
+    const agentFile = resolve(TMP, '.claude', 'agents', 'reviewer.md')
+    const commandFile = resolve(TMP, '.claude', 'commands', 'reviewer.md')
+    expect(existsSync(agentFile)).toBe(true)
+    expect(existsSync(commandFile)).toBe(false)
+    expect(readFileSync(agentFile, 'utf-8')).toContain('description: Reviews PRs')
   })
 })

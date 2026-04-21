@@ -1,0 +1,8 @@
+name: writing
+version: 1.0.0
+author: stim
+description: Writing agents — READMEs, docstrings, explanations
+commands:
+  - readme.stim
+  - docstring.stim
+  - explainer.stim

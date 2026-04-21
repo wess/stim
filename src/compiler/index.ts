@@ -1,6 +1,6 @@
 import type { Command, Statement } from '../types/index.js'
 
-type CompileOptions = {
+export type CompileOptions = {
   engineMode: boolean
   scope: Record<string, any>
 }
@@ -20,13 +20,13 @@ export const compileCommand = (command: Command): string => {
     parts.push(header.join('\n'))
   }
 
-  const sections = compileStatements(command.body, options)
+  const sections = compileBody(command.body, options)
   parts.push(...sections)
 
   return parts.join('\n\n')
 }
 
-const compileStatements = (statements: Statement[], options?: CompileOptions): string[] => {
+export const compileBody = (statements: Statement[], options?: CompileOptions): string[] => {
   return statements.map(s => compileStatement(s, options)).filter(Boolean)
 }
 
@@ -58,6 +58,10 @@ const compileStatement = (statement: Statement, options?: CompileOptions): strin
       return 'Stop current loop/process.'
     case 'annotation':
       return ''
+    case 'metadata':
+      return ''
+    case 'prose':
+      return statement.text
     default:
       return `// Unknown statement type: ${statement.type}`
   }
@@ -93,7 +97,7 @@ const compileCreateFile = (statement: any): string => {
 
 const compileIf = (statement: any, options?: CompileOptions): string => {
   const condition = statement.condition
-  const bodyInstructions = compileStatements(statement.body, options)
+  const bodyInstructions = compileBody(statement.body, options)
 
   let result = `If ${condition}:`
   bodyInstructions.forEach(instruction => {
@@ -101,7 +105,7 @@ const compileIf = (statement: any, options?: CompileOptions): string => {
   })
 
   if (statement.else) {
-    const elseInstructions = compileStatements(statement.else, options)
+    const elseInstructions = compileBody(statement.else, options)
     result += `\n\nOtherwise:`
     elseInstructions.forEach(instruction => {
       result += `\n- ${instruction}`
@@ -113,7 +117,7 @@ const compileIf = (statement: any, options?: CompileOptions): string => {
 
 const compileWhile = (statement: any, options?: CompileOptions): string => {
   const condition = statement.condition
-  const bodyInstructions = compileStatements(statement.body, options)
+  const bodyInstructions = compileBody(statement.body, options)
 
   let result = `While ${condition}, repeat:`
   bodyInstructions.forEach(instruction => {
@@ -126,7 +130,7 @@ const compileWhile = (statement: any, options?: CompileOptions): string => {
 const compileFor = (statement: any, options?: CompileOptions): string => {
   const variable = statement.variable
   const iterable = statement.iterable
-  const bodyInstructions = compileStatements(statement.body, options)
+  const bodyInstructions = compileBody(statement.body, options)
 
   let result = `For each ${variable} in ${iterable}:`
   bodyInstructions.forEach(instruction => {
@@ -158,7 +162,7 @@ const formatAgentType = (agent: string): string => {
 const compileTask = (statement: any, options?: CompileOptions): string => {
   const agentLabel = formatAgentType(statement.agent)
   const desc = statement.description
-  const bodyInstructions = compileStatements(statement.body, options)
+  const bodyInstructions = compileBody(statement.body, options)
 
   let result = `Spawn a ${agentLabel} subagent task: "${desc}"\nUse the Task tool with:\n- subagent_type: ${agentLabel}\n- description: ${desc}\n- prompt:`
   bodyInstructions.forEach(instruction => {

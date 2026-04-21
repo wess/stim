@@ -17,11 +17,13 @@ augroup END
 command! -nargs=0 StimCompile call stim#compile#current_file()
 command! -nargs=0 StimCompileAndRun call stim#compile#compile_and_run()
 command! -nargs=? StimNewCommand call stim#template#new_command(<q-args>)
+command! -nargs=? StimNewAgent call stim#template#new_agent(<q-args>)
 
 " Key mappings
 nnoremap <leader>sc :StimCompile<CR>
 nnoremap <leader>sr :StimCompileAndRun<CR>
 nnoremap <leader>sn :StimNewCommand<CR>
+nnoremap <leader>sa :StimNewAgent<CR>
 
 " Set up buffer-local settings for Stim files
 augroup stim_buffer_settings

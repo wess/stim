@@ -115,7 +115,7 @@ describe('handleRemove', () => {
     handleRemove(['github/wess/brainstorm', '--local'])
 
     expect(logs.some(l => l.includes('Removed github/wess/brainstorm'))).toBe(true)
-    expect(logs.some(l => l.includes('2 commands'))).toBe(true)
+    expect(logs.some(l => l.includes('files'))).toBe(true)
   })
 
   test('exits on invalid source format', () => {

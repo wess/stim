@@ -9,6 +9,12 @@
       "include": "#command"
     },
     {
+      "include": "#agent"
+    },
+    {
+      "include": "#agent-metadata"
+    },
+    {
       "include": "#keywords"
     },
     {
@@ -65,11 +71,41 @@
         }
       ]
     },
+    "agent": {
+      "patterns": [
+        {
+          "name": "meta.agent.stim",
+          "begin": "\\b(agent)\\s+([a-zA-Z_][a-zA-Z0-9_]*)\\s*\\{",
+          "end": "\\}",
+          "beginCaptures": {
+            "1": {
+              "name": "keyword.control.stim"
+            },
+            "2": {
+              "name": "entity.name.function.stim"
+            }
+          },
+          "patterns": [
+            {
+              "include": "$self"
+            }
+          ]
+        }
+      ]
+    },
+    "agent-metadata": {
+      "patterns": [
+        {
+          "name": "keyword.other.metadata.stim",
+          "match": "\\b(description|tools|model)\\b"
+        }
+      ]
+    },
     "keywords": {
       "patterns": [
         {
           "name": "keyword.control.stim",
-          "match": "\\b(if|else|while|for|in|break|command|task|parallel)\\b"
+          "match": "\\b(if|else|while|for|in|break|command|agent|task|parallel)\\b"
         }
       ]
     },

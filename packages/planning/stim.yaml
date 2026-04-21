@@ -1,0 +1,8 @@
+name: planning
+version: 1.0.0
+author: stim
+description: Planning commands — specs, task breakdowns, scope checks
+commands:
+  - spec.stim
+  - breakdown.stim
+  - scope.stim
